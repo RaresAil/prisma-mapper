@@ -1,5 +1,10 @@
 # prisma-mapper
 
+[![CodeQL](https://github.com/RaresAil/prisma-mapper/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/RaresAil/prisma-mapper/actions/workflows/codeql.yml)
+
+![NPM Package Downloads](https://badgen.net/npm/dm/prisma-mapper)
+![Snyk Vulnerabilities for NPM Package](https://img.shields.io/snyk/vulnerabilities/npm/prisma-mapper)
+
 A CLI that adds @map and @@map based on a json
 
 ### Getting Started
@@ -52,4 +57,4 @@ yarn prisma-mapper map
 
 ### Options
 
-Both 2 commands have an option `--schema "new schema path" to use the schema from a different location
+Both 2 commands have an option `--schema "new schema path` to use the schema from a different location
