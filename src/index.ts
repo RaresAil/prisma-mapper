@@ -25,6 +25,7 @@ try {
 } catch {}
 
 export default {
+  logPrefix: '[Prisma Mapper]',
   userDir: dir,
   description,
   version,

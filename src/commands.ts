@@ -12,7 +12,8 @@ export const program = new Command();
 program
   .version(Config.version)
   .description(Config.description)
-  .option('--schema <path>', 'prisma schema path', 'prisma/schema.prisma');
+  .option('--schema <path>', 'prisma schema path', 'prisma/schema.prisma')
+  .option('-o --output <path>', 'prisma schema output path');
 
 const rawCommands = fs.readdirSync(path.join(__dirname, 'commands'));
 rawCommands.forEach((command) => {

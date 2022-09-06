@@ -107,3 +107,4 @@ bin
 .vscode
 prisma
 prisma-mapper.json
+.DS_Store

@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { Models } from './generateJson';
+import { Models } from '../types';
 
 export default function createJson(prismaPath: string, modelsPath: string) {
   const prismaSchema = fs.readFileSync(prismaPath).toString('utf8').split('\n');
