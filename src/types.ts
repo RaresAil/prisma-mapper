@@ -14,6 +14,18 @@ export interface Element {
   name: string;
   arrayArg?: string[];
   params?: Record<string, unknown>;
+  isField?: string; // for fields
+  stringParams?: string; // for fields
+}
+
+export interface FieldMeta {
+  dbTypes: string[];
+  relationOnUpdate?: string;
+}
+
+export interface Elements {
+  elements: Element[];
+  fields: Record<string, FieldMeta>;
 }
 
 export interface ExtendedField extends DMMF.Field {
@@ -21,5 +33,5 @@ export interface ExtendedField extends DMMF.Field {
 }
 
 export interface ExtendedModel extends DMMF.Model {
-  elements?: Element[];
+  elementsParent?: Elements;
 }

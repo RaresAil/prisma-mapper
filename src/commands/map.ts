@@ -97,7 +97,7 @@ export default () => {
       );
       nowTime = Date.now();
       const mappedModels = models.map((model: ExtendedModel) => {
-        model.elements = modelElements[model.name];
+        model.elementsParent = modelElements[model.name];
 
         const jsonModel = jsonModels[model.dbName || model.name];
         if (!jsonModel) {
@@ -109,24 +109,26 @@ export default () => {
           model.name = jsonModel.name;
         }
 
-        if (model.elements) {
-          model.elements = model.elements.map((element) => {
-            if (element.arrayArg) {
-              element.arrayArg = element.arrayArg.map((arg) => {
-                const fieldData = Object.entries(jsonModel.fields).find(
-                  ([key]) => arg.includes(key)
-                );
+        if (model.elementsParent) {
+          model.elementsParent.elements = model.elementsParent.elements.map(
+            (element) => {
+              if (element.arrayArg) {
+                element.arrayArg = element.arrayArg.map((arg) => {
+                  const fieldData = Object.entries(jsonModel.fields).find(
+                    ([key]) => arg === key || arg.includes(`${key}(`)
+                  );
 
-                if (!fieldData?.[1]) {
-                  return arg;
-                }
+                  if (!fieldData?.[1]) {
+                    return arg;
+                  }
 
-                return arg.replace(fieldData[0], fieldData[1]);
-              });
+                  return arg.replace(fieldData[0], fieldData[1]);
+                });
+              }
+
+              return element;
             }
-
-            return element;
-          });
+          );
         }
 
         model.uniqueFields = model.uniqueFields.map((fields) =>

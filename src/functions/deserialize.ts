@@ -1,4 +1,5 @@
 import { printGeneratorConfig } from '@prisma/engine-core';
+import colors from 'colors/safe';
 import {
   GeneratorConfig,
   ConnectorType,
@@ -7,21 +8,32 @@ import {
   DMMF
 } from '@prisma/generator-helper';
 
-import { ExtendedModel, Element } from '../types';
-
-type Attribute = Omit<
-  DMMF.Field,
-  'name' | 'kind' | 'type' | 'isRequired' | 'isList'
->;
+import { ExtendedModel, Element, FieldMeta } from '../types';
+import Config from '../index';
 
 // ? MODELS
 
+const getParamsForElement = (
+  hasIt: boolean,
+  name: string,
+  elements?: Element[]
+) => {
+  const element = elements?.find((element) => element.name === name);
+  const params = element?.stringParams ? `(${element.stringParams})` : '';
+
+  return hasIt ? `${name}${params}` : '';
+};
+
 const handlers = (
   type: string,
-  kind: DMMF.FieldKind
-): Record<string, { (value: Attribute): string | void }> => {
+  kind: DMMF.FieldKind,
+  elements?: Element[]
+): Record<
+  string,
+  { (value: unknown | Record<string, unknown>): string | void }
+> => {
   return {
-    default: (value: Attribute) => {
+    default: (value) => {
       if (kind === 'enum') {
         return `@default(${value})`;
       }
@@ -35,7 +47,9 @@ const handlers = (
       }
 
       if (typeof value === 'object') {
-        return `@default(${value.name}(${value.args
+        return `@default(${(value as Record<string, string>).name}(${(
+          value as Record<string, string[]>
+        ).args
           .map((arg: string) => `"${arg}"`)
           .join(', ')}))`;
       }
@@ -48,26 +62,43 @@ const handlers = (
         return `@default("${value}")`;
       }
 
-      throw new Error(`Unsupported field attribute ${value}`);
+      console.log(
+        colors.yellow(Config.logPrefix),
+        'Unsupported field attribute',
+        colors.red(value.toString())
+      );
+
+      return '';
     },
-    isId: (value: Attribute) => (value ? '@id' : ''),
-    isUnique: (value: Attribute) => (value ? '@unique' : ''),
-    isUpdatedAt: (value: Attribute) => (value ? '@updatedAt' : ''),
-    columnName: (value: Attribute) => (value ? `@map("${value}")` : '')
+    isId: (value) => getParamsForElement(!!value, '@id', elements),
+    isUnique: (value) => getParamsForElement(!!value, '@unique', elements),
+    isUpdatedAt: (value) => (value ? '@updatedAt' : ''),
+    columnName: (value) => (value ? `@map("${value}")` : '')
   };
 };
 
 function handleAttributes(
-  attributes: Attribute,
+  attributes: DMMF.Field,
   kind: DMMF.FieldKind,
   type: string,
-  modelName: string
+  modelName: string,
+  fieldMeta?: FieldMeta,
+  elements?: Element[]
 ) {
-  const { relationFromFields, relationToFields, relationName } = attributes;
+  const {
+    relationFromFields,
+    relationToFields,
+    relationName,
+    relationOnDelete,
+    name
+  } = attributes;
+
+  const fieldElements = elements?.filter((element) => element.isField === name);
+
   if (kind === 'scalar') {
     return `${Object.keys(attributes)
       .map((each) => {
-        const handler = handlers(type, kind)[each.toString()];
+        const handler = handlers(type, kind, fieldElements)[each.toString()];
         if (!handler) {
           return '';
         }
@@ -80,19 +111,29 @@ function handleAttributes(
   if (kind === 'object' && relationFromFields) {
     const includeRelationName = type === modelName;
 
-    const relName = includeRelationName ? `name: "${relationName}", ` : '';
+    const relName = includeRelationName ? `"${relationName}", ` : '';
+    const onDelete = relationOnDelete ? `onDelete: ${relationOnDelete}` : '';
+    const onUpdate = fieldMeta?.relationOnUpdate
+      ? `onUpdate: ${fieldMeta.relationOnUpdate}`
+      : '';
+
+    const relations = [onDelete, onUpdate].filter((each) => each).join(', ');
 
     if (relationFromFields.length > 0) {
-      return `@relation(${relName}fields: [${relationFromFields}], references: [${relationToFields}])`;
+      return `@relation(${relName}fields: [${relationFromFields}], references: [${relationToFields}], ${relations})`;
     }
 
-    return `@relation(${relName})`;
+    if (relName === '') {
+      return '';
+    }
+
+    return `@relation(${relName}${relations})`;
   }
 
   if (kind === 'enum') {
     return `${Object.keys(attributes)
       .map((each) => {
-        const handler = handlers(type, kind)[each.toString()];
+        const handler = handlers(type, kind, fieldElements)[each.toString()];
         if (!handler) {
           return '';
         }
@@ -105,32 +146,65 @@ function handleAttributes(
   return '';
 }
 
-function handleFields(modelName: string, fields: DMMF.Field[]) {
+function handleFields(
+  modelName: string,
+  fields: DMMF.Field[],
+  fieldsMeta?: Record<string, FieldMeta>,
+  elements?: Element[]
+) {
   return fields
     .map((field) => {
-      const { name, kind, type, isRequired, isList, ...attributes } = field;
+      const { name, kind, type, isRequired, isList } = field;
+
+      const fieldMeta = fieldsMeta?.[name.toString()];
+      const dbTypeString = fieldMeta?.dbTypes?.join(' ') || '';
+
       if (kind === 'scalar') {
-        return `  ${name} ${type}${isRequired ? '' : '?'} ${handleAttributes(
-          attributes,
+        return `  ${name} ${type}${
+          isRequired ? '' : '?'
+        } ${dbTypeString} ${handleAttributes(
+          field,
           kind,
           type,
-          modelName
+          modelName,
+          fieldMeta,
+          elements
         )}`;
       }
 
       if (kind === 'object') {
         return `  ${name} ${type}${
           isList ? '[]' : isRequired ? '' : '?'
-        } ${handleAttributes(attributes, kind, type, modelName)}`;
+        } ${dbTypeString} ${handleAttributes(
+          field,
+          kind,
+          type,
+          modelName,
+          fieldMeta,
+          elements
+        )}`;
       }
 
       if (kind === 'enum') {
         return `  ${name} ${type}${
           isList ? '[]' : isRequired ? '' : '?'
-        } ${handleAttributes(attributes, kind, type, modelName)}`;
+        } ${dbTypeString} ${handleAttributes(
+          field,
+          kind,
+          type,
+          modelName,
+          fieldMeta,
+          elements
+        )}`;
       }
 
-      throw new Error(`Unsupported field kind "${kind}"`);
+      console.log(
+        colors.yellow(Config.logPrefix),
+        'Unsupported field kind',
+        colors.red(kind.toString())
+      );
+
+      return '';
     })
     .join('\n');
 }
@@ -169,12 +243,19 @@ function handleModelElements(elements?: Element[]) {
 }
 
 function deserializeModel(model: ExtendedModel) {
-  const { name, dbName, fields, elements } = model;
+  const { name, dbName, fields, elementsParent } = model;
 
   const output = `
 model ${name} {
-${handleFields(name, fields)}
-${handleDbName(dbName)}${handleModelElements(elements)}
+${handleFields(
+  name,
+  fields,
+  elementsParent?.fields,
+  elementsParent?.elements?.filter((element) => element.isField)
+)}
+${handleDbName(dbName)}${handleModelElements(
+    elementsParent?.elements?.filter((element) => !element.isField)
+  )}
 }`;
 
   return output;

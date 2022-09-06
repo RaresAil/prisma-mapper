@@ -1,11 +1,15 @@
 import { formatSchema } from '@prisma/internals';
 
-import { Element } from '../types';
+import { Elements } from '../types';
 
-export async function getModelElements(schema: string) {
+const SPECIAL_PARAMS = ['@unique', '@id'];
+
+export async function getModelElements(
+  schema: string
+): Promise<Record<string, Elements>> {
   const parsedCurrentSchema = await formatSchema({ schema });
   let currentModel = '';
-  const elements: Record<string, Element[]> = {};
+  const elementsParent: Record<string, Elements> = {};
 
   parsedCurrentSchema.split('\n').forEach((line) => {
     if (currentModel && line.trim().startsWith('@@map')) {
@@ -14,10 +18,19 @@ export async function getModelElements(schema: string) {
 
     if (line.trim().startsWith('model')) {
       currentModel = line.split(' ')[1];
-      elements[currentModel.toString()] = [];
-    } else if (line.trim().startsWith('}')) {
+      elementsParent[currentModel.toString()] = {
+        elements: [],
+        fields: {}
+      };
+      return;
+    }
+
+    if (line.trim().startsWith('}')) {
       currentModel = '';
-    } else if (currentModel && line.trim().startsWith('@@')) {
+      return;
+    }
+
+    if (currentModel && line.trim().startsWith('@@')) {
       const trimmedLine = line.trim();
       const name = trimmedLine.split('(')[0];
 
@@ -41,13 +54,77 @@ export async function getModelElements(schema: string) {
         ?.split(',')
         ?.map((e) => e.trim());
 
-      elements[currentModel.toString()].push({
+      elementsParent[currentModel.toString()].elements.push({
         name,
         arrayArg: array,
         params
       });
+
+      return;
+    }
+
+    if (currentModel) {
+      const fieldName = line
+        .trim()
+        ?.split(' ')
+        ?.map((e) => e.trim())
+        ?.filter((e) => e)?.[0];
+
+      if (fieldName) {
+        elementsParent[currentModel.toString()].fields[fieldName.toString()] = {
+          dbTypes: []
+        };
+      }
+
+      if (line.includes('@db.')) {
+        const elements = line
+          .slice(line.indexOf('@'))
+          .split('@')
+          .reduce((acc: string[], element) => {
+            const trimmed = element.trim();
+            if (!trimmed || !trimmed.startsWith('db.')) {
+              return acc;
+            }
+
+            return [...acc, `@${trimmed}`];
+          }, []);
+
+        elementsParent[currentModel.toString()].fields[
+          fieldName.toString()
+        ].dbTypes = elements;
+      }
+
+      if (line.includes('@relation(') && line.indexOf('onUpdate') >= 0) {
+        const onUpdate = line
+          .slice(line.indexOf('onUpdate'))
+          .split(',')
+          .find((e) => e.includes('onUpdate'))
+          ?.split(': ')[1]
+          ?.replace(')', '');
+
+        elementsParent[currentModel.toString()].fields[
+          fieldName.toString()
+        ].relationOnUpdate = onUpdate;
+      }
+
+      SPECIAL_PARAMS.forEach((specialParam) => {
+        if (!line.includes(`${specialParam}(`)) {
+          return;
+        }
+
+        const uniqueParams = line
+          .trim()
+          ?.split(`${specialParam}(`)?.[1]
+          ?.split(')')?.[0];
+
+        elementsParent[currentModel.toString()].elements.push({
+          isField: fieldName,
+          name: specialParam,
+          stringParams: uniqueParams
+        });
+      });
     }
   });
 
-  return elements;
+  return elementsParent;
 }
