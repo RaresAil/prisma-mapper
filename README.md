@@ -7,6 +7,14 @@
 
 A CLI that adds @map and @@map based on a json
 
+### Features
+
+- Adds @map and @@map
+- Keeps the @db. attributes for fields
+- Adds the @updatedAt for fields with the name `updated_at` or `updatedAt`
+- The prisma schema is formatted by the `@prisma/internals` after generation
+- The cli does not modify the current schema and generates a new one with the info from the current one
+
 ### Getting Started
 
 If the prisma schema is often pulled you can use the cli like
