@@ -180,7 +180,7 @@ export default () => {
             });
           }
 
-          if (field.name === 'updated_at') {
+          if (field.name === 'updated_at' || field.name === 'updatedAt') {
             field.isUpdatedAt = true;
           }
 

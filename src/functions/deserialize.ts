@@ -8,7 +8,7 @@ import {
   DMMF
 } from '@prisma/generator-helper';
 
-import { ExtendedModel, Element, FieldMeta } from '../types';
+import { ExtendedModel, Element, FieldMeta, ExtendedField } from '../types';
 import Config from '../index';
 
 // ? MODELS
@@ -78,7 +78,7 @@ const handlers = (
 };
 
 function handleAttributes(
-  attributes: DMMF.Field,
+  attributes: ExtendedField,
   kind: DMMF.FieldKind,
   type: string,
   modelName: string,
@@ -90,10 +90,13 @@ function handleAttributes(
     relationToFields,
     relationName,
     relationOnDelete,
-    name
+    name,
+    columnName
   } = attributes;
 
-  const fieldElements = elements?.filter((element) => element.isField === name);
+  const fieldElements = elements?.filter(
+    (element) => element.isField === (columnName || name)
+  );
 
   if (kind === 'scalar') {
     return `${Object.keys(attributes)
@@ -148,15 +151,15 @@ function handleAttributes(
 
 function handleFields(
   modelName: string,
-  fields: DMMF.Field[],
+  fields: ExtendedField[],
   fieldsMeta?: Record<string, FieldMeta>,
   elements?: Element[]
 ) {
   return fields
     .map((field) => {
-      const { name, kind, type, isRequired, isList } = field;
+      const { name, kind, type, isRequired, isList, columnName } = field;
 
-      const fieldMeta = fieldsMeta?.[name.toString()];
+      const fieldMeta = fieldsMeta?.[(columnName || name).toString()];
       const dbTypeString = fieldMeta?.dbTypes?.join(' ') || '';
 
       if (kind === 'scalar') {
