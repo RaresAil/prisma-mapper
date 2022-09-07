@@ -1,6 +1,7 @@
 import { DMMF } from '@prisma/generator-helper';
 
 export interface Model {
+  relationFields?: Record<string, string | null>;
   fields: Record<string, string | null>;
   name?: string | null;
   hasMap: boolean;

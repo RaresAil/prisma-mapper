@@ -1,6 +1,6 @@
 {
   "name": "prisma-mapper",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A CLI that adds @Map and @@Map based on a json for the prisma schema",
   "main": "bin/index.js",
   "preferGlobal": true,

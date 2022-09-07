@@ -186,6 +186,11 @@ export default () => {
 
           const newName = jsonModel.fields[name.toString()];
           if (!newName) {
+            const relationalName = jsonModel.relationFields?.[name.toString()];
+            if (relationalName) {
+              field.name = relationalName;
+            }
+
             return field;
           }
 

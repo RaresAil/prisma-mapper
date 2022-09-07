@@ -71,27 +71,35 @@ export default () => {
           const existingModel: Model = acc[name.toString()];
           const hasMap = !!dbName;
 
+          const relationFields: Record<string, string | null> =
+            existingModel?.relationFields || {};
+
+          const fieldsReducer = fields.reduce(
+            (
+              fieldsAcc,
+              { name, relationName, relationFromFields, relationToFields }
+            ) => {
+              if (relationName || relationFromFields || relationToFields) {
+                relationFields[name.toString()] =
+                  relationFields[name.toString()] || null;
+                return fieldsAcc;
+              }
+
+              return {
+                ...fieldsAcc,
+                [name]: fieldsAcc[name.toString()] || null
+              };
+            },
+            (existingModel?.fields as Record<string, string | null>) || {}
+          );
+
           return {
             ...acc,
             [name]: {
               ...(!hasMap && { name: existingModel?.name || null }),
               hasMap,
-              fields: fields.reduce(
-                (
-                  fieldsAcc,
-                  { name, relationName, relationFromFields, relationToFields }
-                ) => {
-                  if (relationName || relationFromFields || relationToFields) {
-                    return fieldsAcc;
-                  }
-
-                  return {
-                    ...fieldsAcc,
-                    [name]: fieldsAcc[name.toString()] || null
-                  };
-                },
-                (existingModel?.fields as Record<string, string | null>) || {}
-              )
+              fields: fieldsReducer,
+              relationFields
             }
           };
         },
