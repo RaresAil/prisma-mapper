@@ -13,6 +13,7 @@ program
   .version(Config.version)
   .description(Config.description)
   .option('--schema <path>', 'prisma schema path', 'prisma/schema.prisma')
+  .option('--camel', 'use camelCase and ignore the prisma-mapper.json')
   .option('-o --output <path>', 'prisma schema output path');
 
 const rawCommands = fs.readdirSync(path.join(__dirname, 'commands'));

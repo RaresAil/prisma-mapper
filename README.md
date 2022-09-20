@@ -66,3 +66,16 @@ yarn prisma-mapper map
 ### Options
 
 Both 2 commands have an option `--schema "new schema path` to use the schema from a different location
+
+#### For both commands
+
+- `--schema "new schema path`
+  - is to use the schema from a different location
+- `--camel`
+  - for map it does the mapping without a json file
+  - for generate it defaults the namings to camel case in the generated json
+
+#### Map options
+
+- `-o --output "output schema path"`
+  - after mapping save the schema to another location
