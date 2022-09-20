@@ -3,8 +3,9 @@ import colors from 'colors/safe';
 import nodePath from 'path';
 import fs from 'fs';
 
+import { generateJson } from '../functions/generate';
 import { program } from '../commands';
-import { Model, Models } from '../types';
+import { Models } from '../types';
 import Config from '../index';
 
 export default () => {
@@ -14,7 +15,7 @@ export default () => {
       'Generates/updates a json file with the mappings from prisma schema'
     )
     .action(async () => {
-      const { schema } = program.opts();
+      const { schema, camel } = program.opts();
 
       const prismaPath = nodePath.normalize(
         nodePath.join(Config.userDir || '', schema)
@@ -66,74 +67,7 @@ export default () => {
       );
       nowTime = Date.now();
 
-      let config = document.datamodel.models.reduce(
-        (acc: Models, { name, dbName, fields }) => {
-          const existingModel: Model = acc[name.toString()];
-          const hasMap = !!dbName;
-
-          const relationFields: Record<string, string | null> =
-            existingModel?.relationFields || {};
-
-          const fieldsReducer = fields.reduce(
-            (
-              fieldsAcc,
-              { name, relationName, relationFromFields, relationToFields }
-            ) => {
-              if (relationName || relationFromFields || relationToFields) {
-                relationFields[name.toString()] =
-                  relationFields[name.toString()] || null;
-                return fieldsAcc;
-              }
-
-              return {
-                ...fieldsAcc,
-                [name]: fieldsAcc[name.toString()] || null
-              };
-            },
-            (existingModel?.fields as Record<string, string | null>) || {}
-          );
-
-          return {
-            ...acc,
-            [name]: {
-              ...(!hasMap && { name: existingModel?.name || null }),
-              hasMap,
-              fields: fieldsReducer,
-              relationFields
-            }
-          };
-        },
-        existingModels
-      );
-
-      config = document.datamodel.enums.reduce(
-        (acc: Models, { dbName, name, values }) => {
-          const existingEnum = acc[name.toString()];
-          const hasMap = !!dbName;
-
-          return {
-            ...acc,
-            [name]: {
-              ...(!hasMap && { name: existingEnum?.name || null }),
-              hasMap,
-              fields: values.reduce(
-                (valuesAcc: Record<string, string | null>, value) => {
-                  const valueName = value.dbName || value.name;
-                  return {
-                    ...valuesAcc,
-                    [valueName]:
-                      valuesAcc[valueName.toString()] ||
-                      (value.dbName ? value.name : null) ||
-                      null
-                  };
-                },
-                (existingEnum?.fields as Record<string, string | null>) || {}
-              )
-            }
-          };
-        },
-        config
-      );
+      const config = await generateJson(document, existingModels, camel);
 
       console.log(
         colors.cyan(Config.logPrefix),

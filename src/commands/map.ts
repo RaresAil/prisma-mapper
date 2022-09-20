@@ -14,15 +14,16 @@ import {
   deserializeModels,
   deserializeEnums
 } from '../functions/deserialize';
+import { generateJson } from '../functions/generate';
 
 export default () => {
   program
     .command('map')
     .description(
-      'Adds the @map and @@map to the prisma schema based on prisma-mapper.json'
+      'Adds the @map and @@map to the prisma schema based on prisma-mapper.json or camelCase'
     )
     .action(async () => {
-      const { schema, output } = program.opts();
+      const { schema, output, camel } = program.opts();
 
       const prismaPath = nodePath.normalize(
         nodePath.join(Config.userDir || '', schema)
@@ -51,14 +52,6 @@ export default () => {
         colors.cyan(schema)
       );
 
-      const jsonModels: Models = JSON.parse(
-        fs
-          .readFileSync(
-            nodePath.join(Config.userDir || '', 'prisma-mapper.json')
-          )
-          .toString('utf8')
-      );
-
       const datamodel = fs.readFileSync(prismaPath, 'utf-8');
 
       console.log(
@@ -76,6 +69,16 @@ export default () => {
       );
       nowTime = Date.now();
       const dmmf = await getDMMF({ datamodel });
+
+      const jsonModels: Models = !camel
+        ? JSON.parse(
+            fs
+              .readFileSync(
+                nodePath.join(Config.userDir || '', 'prisma-mapper.json')
+              )
+              .toString('utf8')
+          )
+        : await generateJson(dmmf, {}, true);
 
       console.log(
         colors.cyan(Config.logPrefix),
@@ -260,9 +263,7 @@ export default () => {
 
       console.log(
         colors.green(Config.logPrefix),
-        'Schema mapped using',
-        colors.cyan('prisma-mapper.json'),
-        'in',
+        'Schema mapped in',
         colors.green(`${Date.now() - start}ms`)
       );
     });
