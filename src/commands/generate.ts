@@ -1,14 +1,14 @@
 import { getDMMF } from '@prisma/internals';
+import { Command } from 'commander';
 import colors from 'colors/safe';
 import nodePath from 'path';
 import fs from 'fs';
 
 import { generateJson } from '../functions/generate';
-import { program } from '../commands';
 import { Models } from '../types';
 import Config from '../index';
 
-export default () => {
+export default (program: Command) => {
   program
     .command('generate')
     .description(

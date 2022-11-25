@@ -4,8 +4,8 @@ import { camelize, capitalize } from './camelCase';
 
 export const generateJson = async (
   document: DMMF.Document,
-  existingModels: Models = {},
-  camelCase = false
+  existingModels: Models,
+  camelCase: boolean
 ): Promise<Models> => {
   const parseName = <T = string | null>(
     name: T,
@@ -80,11 +80,7 @@ export const generateJson = async (
         ...acc,
         [name]: {
           ...(!hasMap && {
-            name: parseName(
-              existingEnum?.name,
-              existingEnum?.name || null,
-              true
-            )
+            name: parseName(name, existingEnum?.name || null, true)
           }),
           hasMap,
           fields: values.reduce(

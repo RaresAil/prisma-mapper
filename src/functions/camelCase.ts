@@ -1,4 +1,9 @@
 export const camelize = (str: string) => {
+  // ignore uppercase letters
+  if (str.toLocaleUpperCase() === str) {
+    return str;
+  }
+
   return str
     .replace(/_/g, ' ')
     .replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {

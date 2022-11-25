@@ -4,7 +4,7 @@ import os from 'os';
 import fs from 'fs';
 
 export default abstract class Utils {
-  public static getUserDic(): string | undefined {
+  public static getUserDic(): string {
     let findCommand;
     const platform = os.platform();
     const linuxPlatforms = [
@@ -21,7 +21,7 @@ export default abstract class Utils {
     } else if (platform === 'win32') {
       findCommand = 'cd';
     } else {
-      return undefined;
+      return '';
     }
 
     let dir: string | undefined;
@@ -31,11 +31,11 @@ export default abstract class Utils {
         .trim()
         .replace(/\r?\n|\r/g, '');
     } catch {
-      return undefined;
+      return '';
     }
 
     if (!fs.existsSync(nodePath.normalize(dir))) {
-      return undefined;
+      return '';
     }
 
     return dir;

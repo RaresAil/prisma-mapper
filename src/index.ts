@@ -3,11 +3,11 @@ import fs from 'fs';
 
 import Utils from './Utils';
 
-let dir: string | undefined;
 const root = __dirname;
 let version = '0.0.0';
 let description = '';
 let name = '';
+let dir = '';
 
 try {
   const packageData = fs

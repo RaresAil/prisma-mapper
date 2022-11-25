@@ -1,6 +1,7 @@
 # prisma-mapper
 
 [![CodeQL](https://github.com/RaresAil/prisma-mapper/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/RaresAil/prisma-mapper/actions/workflows/codeql.yml)
+[![Node.js CI](https://github.com/RaresAil/prisma-mapper/actions/workflows/node.js.yml/badge.svg)](https://github.com/RaresAil/prisma-mapper/actions/workflows/node.js.yml)
 
 ![NPM Package Downloads](https://badgen.net/npm/dm/prisma-mapper)
 ![Snyk Vulnerabilities for NPM Package](https://img.shields.io/snyk/vulnerabilities/npm/prisma-mapper)
@@ -9,11 +10,11 @@ A CLI that adds @map and @@map based on a json
 
 ### Features
 
-- Adds @map and @@map
-- Keeps the @db. attributes for fields
-- Adds the @updatedAt for fields with the name `updated_at` or `updatedAt`
+- Adds `@map` and `@@map`
+- Keeps the `@db.` attributes for fields
+- Adds the `@updatedAt` for fields with the name `updated_at` or `updatedAt`
 - The prisma schema is formatted by the `@prisma/internals` after generation
-- The cli does not modify the current schema and generates a new one with the info from the current one
+- The cli does not modify the current schema and generates a new one with the information from the current one
 
 ### Getting Started
 
@@ -26,11 +27,19 @@ yarn prisma db pull --force
   && yarn prisma generate
 ```
 
+or for `camelCase` by default
+
+```bash
+yarn prisma db pull --force
+  && yarn prisma-mapper map --camel
+  && yarn prisma generate
+```
+
 With db pull force you get the latest schema updates and
 force overwrites the file.
 
 The generate command creates a json called `prisma-mapper.json` in the root,
-if the json already exists it adds in it any new fields/models.
+if the json already exists it adds in it any new fields/models. **`(NOT FOR --camel option)`**
 
 ```bash
 yarn prisma-mapper generate
@@ -39,8 +48,8 @@ yarn prisma-mapper generate
 The json looks like the following:
 
 - The hasMap is added by generate if the prisma model has already a `@@map`
-- The name is to add @@map for a model name
-- In the fields object is to add @map for each field
+- The name is to add `@@map` for a model name
+- In the fields object is to add `@map` for each field
 
 ```json
 {
