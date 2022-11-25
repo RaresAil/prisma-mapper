@@ -1,4 +1,3 @@
-import { printGeneratorConfig } from '@prisma/engine-core';
 import colors from 'colors/safe';
 import {
   GeneratorConfig,
@@ -303,6 +302,61 @@ datasource ${name} {
 }`;
 }
 
+function customPrintGeneratorConfig({
+  previewFeatures,
+  binaryTargets,
+  provider,
+  output,
+  config,
+  name
+}: GeneratorConfig) {
+  const providerValue = provider.value
+    ? `"${provider.value}"`
+    : provider.fromEnvVar
+    ? `env("${provider.fromEnvVar}")`
+    : '';
+
+  let previewFeaturesValue = '';
+  if (previewFeatures.length) {
+    previewFeaturesValue = `previewFeatures = [${previewFeatures
+      .map((each) => `"${each}"`)
+      .join(', ')}]`;
+  }
+
+  let binaryTargetsValue = '';
+  if (binaryTargets.length) {
+    const targets = binaryTargets.map((target) => {
+      if (target.fromEnvVar) {
+        return `env("${target.fromEnvVar}")`;
+      }
+
+      return `"${target.value}"`;
+    });
+
+    binaryTargetsValue = `binaryTargets = [${targets.join(', ')}]`;
+  }
+
+  const outputValue = output?.value
+    ? `output = "${output?.value}"`
+    : output?.fromEnvVar
+    ? `output = env("${output?.fromEnvVar}")`
+    : '';
+
+  const configValue = Object.entries(config)
+    .map(([key, value]) => {
+      return `${key} = "${value}"`;
+    })
+    .join('\n');
+
+  return `generator ${name} {
+    provider = ${providerValue}
+    ${previewFeaturesValue}
+    ${binaryTargetsValue}
+    ${configValue}
+    ${outputValue}
+  }`;
+}
+
 // ? Exports
 
 export async function deserializeModels(models: DMMF.Model[]) {
@@ -317,7 +371,7 @@ export function deserializeDatasources(datasources: DataSource[]) {
 
 export async function deserializeGenerators(generators: GeneratorConfig[]) {
   return generators
-    .map((generator) => printGeneratorConfig(generator))
+    .map((generator) => customPrintGeneratorConfig(generator))
     .join('\n');
 }
 

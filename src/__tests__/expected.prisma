@@ -1,5 +1,9 @@
 generator client {
-  provider = "mock"
+  provider        = "mock"
+  previewFeatures = ["interactiveTransactions"]
+  binaryTargets   = [env("mock"), "mock"]
+  engineType      = "mock"
+  output          = env("mock")
 }
 
 datasource db {
