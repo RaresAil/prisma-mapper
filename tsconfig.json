@@ -14,5 +14,5 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "exclude": ["node_modules", "bin", "demo"]
+  "exclude": ["node_modules", "bin", "__tests__", "jest"]
 }

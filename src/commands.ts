@@ -26,7 +26,7 @@ rawCommands.forEach((command) => {
       return;
     }
 
-    require(path.join(__dirname, 'commands', command)).default();
+    require(path.join(__dirname, 'commands', command)).default(program);
   } catch {}
 });
 
@@ -41,9 +41,9 @@ if (process.env.NODE_ENV !== 'dev') {
       if (latestVersion !== Config.version) {
         console.log(
           '\n\n',
-          colors.yellow('WARNING'),
+          colors.yellow('Outdated'),
           colors.gray(':'),
-          colors.white('You are not using the latest version!'),
+          colors.white('You are not using the latest version'),
           `${colors.gray('(')}Last: ${colors.green(latestVersion)}`,
           `Current: ${colors.red(Config.version)}${colors.gray(')')}`,
           '\n\n'

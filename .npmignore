@@ -108,4 +108,7 @@ bin
 prisma
 prisma-mapper.json
 .DS_Store
-out.prisma
+
+__tests__
+jest
+.github

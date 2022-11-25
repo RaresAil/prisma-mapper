@@ -1,0 +1,76 @@
+generator client {
+  provider = "mock"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ModelOne {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  someId    Int       @unique @map("some_id")
+  json      Json?     @db.Json
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@index([deletedAt, someId], map: "index_name")
+  @@map("model_one")
+}
+
+model ModelTwo {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  string     String?      @db.VarChar(255)
+  createdAt  DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime?    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime?    @map("deleted_at") @db.Timestamptz(6)
+  someInt    Int          @map("some_int")
+  someUuid   String?      @map("some_uuid") @db.Uuid
+  ModelThree ModelThree[]
+
+  @@map("model_two")
+}
+
+model ModelThree {
+  modelTwoId String    @id @map("model_two_id")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime? @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+  ModelTwo   ModelTwo  @relation(fields: [modelTwoId], references: [id], onDelete: Cascade)
+
+  @@map("model_three")
+}
+
+model ModelFour {
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  enumOne   EnumOne    @default(SomeValue) @map("enum_one")
+  enumTwo   EnumTwo?   @map("enum_two")
+  enumThree EnumThree? @map("enum_three")
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime?  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime?  @map("deleted_at") @db.Timestamptz(6)
+
+  @@map("model_four")
+}
+
+enum EnumOne {
+  SomeValue @map("some_value")
+  Single    @map("single")
+
+  @@map("enum_one")
+}
+
+enum EnumTwo {
+  SOME_VALUE
+  SINGLE
+
+  @@map("enum_two")
+}
+
+enum EnumThree {
+  SomeValue @map("someValue")
+  Single    @map("single")
+
+  @@map("enum_three")
+}
