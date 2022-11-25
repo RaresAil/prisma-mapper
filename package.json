@@ -30,6 +30,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
+    "prepublishOnly": "yarn build",
     "dev:bin": "yarn build && NODE_ENV=dev node bin/commands.js",
     "dev": "NODE_ENV=dev ts-node src/commands.ts",
     "build": "yarn lint && rm -rf ./bin/ && tsc -p .",
