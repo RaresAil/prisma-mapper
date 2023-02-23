@@ -16,6 +16,17 @@ A CLI that adds @map and @@map based on a json
 - The prisma schema is formatted by the `@prisma/internals` after generation
 - The cli does not modify the current schema and generates a new one with the information from the current one
 
+### Node Versions
+
+| Version  | Supported |
+| -------- | --------- |
+| ^14.15.0 | ✅        |
+| 15.x     | ❌        |
+| ^16.10.0 | ✅        |
+| 17.x     | ❌        |
+| 18.x     | ✅        |
+| 19.x     | ✅        |
+
 ### Getting Started
 
 If the prisma schema is often pulled you can use the cli like
