@@ -7,6 +7,9 @@
   "bin": {
     "prisma-mapper": "bin/commands.js"
   },
+  "engines": {
+    "node": "^14.15.0 || ^16.10.0 || >=18.0.0"
+  },
   "types": "bin",
   "files": [
     "bin/*"
