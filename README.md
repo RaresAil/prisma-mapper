@@ -2,9 +2,9 @@
 
 [![CodeQL](https://github.com/RaresAil/prisma-mapper/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/RaresAil/prisma-mapper/actions/workflows/codeql.yml)
 [![Node.js CI](https://github.com/RaresAil/prisma-mapper/actions/workflows/node.js.yml/badge.svg)](https://github.com/RaresAil/prisma-mapper/actions/workflows/node.js.yml)
+[![Yarn Audit CI](https://github.com/RaresAil/prisma-mapper/actions/workflows/audit.yml/badge.svg)](https://github.com/RaresAil/prisma-mapper/actions/workflows/audit.yml)
 
 ![NPM Package Downloads](https://badgen.net/npm/dm/prisma-mapper)
-![Snyk Vulnerabilities for NPM Package](https://img.shields.io/snyk/vulnerabilities/npm/prisma-mapper)
 
 A CLI that adds @map and @@map based on a json
 

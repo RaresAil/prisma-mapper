@@ -1,0 +1,23 @@
+name: Yarn Audit CI
+
+on:
+  push:
+    branches: ['master']
+  pull_request:
+    branches: ['master']
+  schedule:
+    - cron: '0 0 * * 3'
+
+jobs:
+  audit:
+    name: Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 19.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19.0
+          cache: 'yarn'
+      - name: Audit
+        run: yarn audit --level info
