@@ -19,7 +19,5 @@ jobs:
         with:
           node-version: 19.0
           cache: 'yarn'
-      - name: Install Dependencies
-        run: yarn install --frozen-lockfile
       - name: Audit
-        run: yarn audit
+        run: yarn audit --level info
