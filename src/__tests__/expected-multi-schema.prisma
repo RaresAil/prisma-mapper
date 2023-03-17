@@ -1,6 +1,6 @@
 generator client {
   provider        = "mock"
-  previewFeatures = ["metrics"]
+  previewFeatures = ["metrics", "multiSchema"]
   binaryTargets   = [env("mock"), "mock"]
   engineType      = "mock"
   output          = env("mock")
@@ -9,6 +9,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["base", "transactional"]
 }
 
 model ModelOne {
@@ -21,6 +22,7 @@ model ModelOne {
 
   @@index([deletedAt, someId], map: "index_name")
   @@map("model_one")
+  @@schema("base")
 }
 
 model ModelTwo {
@@ -35,6 +37,7 @@ model ModelTwo {
 
   @@index([deletedAt, createdAt(sort: Desc)], map: "index_name_2")
   @@map("model_two")
+  @@schema("transactional")
 }
 
 model ModelThree {
@@ -46,6 +49,7 @@ model ModelThree {
 
   @@id([modelTwoId], map: "index_name_3")
   @@map("model_three")
+  @@schema("base")
 }
 
 model ModelFour {
@@ -58,6 +62,7 @@ model ModelFour {
   deletedAt DateTime?  @map("deleted_at") @db.Timestamptz(6)
 
   @@map("model_four")
+  @@schema("transactional")
 }
 
 enum EnumOne {
@@ -65,6 +70,7 @@ enum EnumOne {
   Single    @map("single")
 
   @@map("enum_one")
+  @@schema("base")
 }
 
 enum EnumTwo {
@@ -72,6 +78,7 @@ enum EnumTwo {
   SINGLE
 
   @@map("enum_two")
+  @@schema("transactional")
 }
 
 enum EnumThree {
@@ -79,4 +86,5 @@ enum EnumThree {
   Single    @map("single")
 
   @@map("enum_three")
+  @@schema("base")
 }
