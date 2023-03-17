@@ -7,7 +7,13 @@ import {
   DMMF
 } from '@prisma/generator-helper';
 
-import { ExtendedModel, Element, FieldMeta, ExtendedField } from '../types';
+import {
+  ExtendedModel,
+  Element,
+  FieldMeta,
+  ExtendedField,
+  ExtendedEnum
+} from '../types';
 import Config from '../index';
 
 // ? MODELS
@@ -82,7 +88,8 @@ function handleAttributes(
   type: string,
   modelName: string,
   fieldMeta?: FieldMeta,
-  elements?: Element[]
+  elements?: Element[],
+  modelElements?: Element[]
 ) {
   const {
     relationFromFields,
@@ -102,6 +109,13 @@ function handleAttributes(
       .map((each) => {
         const handler = handlers(type, kind, fieldElements)[each.toString()];
         if (!handler) {
+          return '';
+        }
+
+        if (
+          attributes.isId &&
+          !!modelElements?.find(({ name }) => name === '@@id')
+        ) {
           return '';
         }
 
@@ -152,7 +166,8 @@ function handleFields(
   modelName: string,
   fields: ExtendedField[],
   fieldsMeta?: Record<string, FieldMeta>,
-  elements?: Element[]
+  elements?: Element[],
+  modelElements?: Element[]
 ) {
   return fields
     .map((field) => {
@@ -170,7 +185,8 @@ function handleFields(
           type,
           modelName,
           fieldMeta,
-          elements
+          elements,
+          modelElements
         )}`;
       }
 
@@ -183,7 +199,8 @@ function handleFields(
           type,
           modelName,
           fieldMeta,
-          elements
+          elements,
+          modelElements
         )}`;
       }
 
@@ -196,7 +213,8 @@ function handleFields(
           type,
           modelName,
           fieldMeta,
-          elements
+          elements,
+          modelElements
         )}`;
       }
 
@@ -228,6 +246,10 @@ function handleModelElements(elements?: Element[]) {
         params = [...params, `[${element.arrayArg.join(', ')}]`];
       }
 
+      if (element.rawParams) {
+        params = [...params, `${element.rawParams.join(', ')}`];
+      }
+
       if (element.params) {
         params = [
           ...params,
@@ -253,7 +275,8 @@ ${handleFields(
   name,
   fields,
   elementsParent?.fields,
-  elementsParent?.elements?.filter((element) => element.isField)
+  elementsParent?.elements?.filter((element) => element.isField),
+  elementsParent?.elements?.filter((element) => !element.isField)
 )}
 ${handleDbName(dbName)}${handleModelElements(
     elementsParent?.elements?.filter((element) => !element.isField)
@@ -265,16 +288,24 @@ ${handleDbName(dbName)}${handleModelElements(
 
 // ? ENUMS
 
-function deserializeEnum({ name, values, dbName }: DMMF.DatamodelEnum) {
+function deserializeEnum({
+  name,
+  values,
+  dbName,
+  elementsParent
+}: ExtendedEnum) {
   const outputValues = values.map(({ name, dbName }) => {
     let result = name;
-    if (name !== dbName && dbName) result += `@map("${dbName}")`;
+    if (name !== dbName && dbName) result += ` @map("${dbName}")`;
     return result;
   });
+
   return `
 enum ${name} {
   ${outputValues.join('\n\t')}
-  ${handleDbName(dbName || null)}
+  ${handleDbName(dbName || null)}${handleModelElements(
+    elementsParent?.elements?.filter((element) => !element.isField)
+  )}
 }`;
 }
 
@@ -292,13 +323,22 @@ function handleProvider(provider: ConnectorType | string) {
   return `provider = "${provider}"`;
 }
 
+function handleSchemas(schemas: string[]) {
+  if (schemas.length === 0) {
+    return '';
+  }
+
+  return `schemas = [${schemas.map((schema) => `"${schema}"`).join(', ')}]`;
+}
+
 function deserializeDatasource(datasource: DataSource) {
-  const { activeProvider: provider, name, url } = datasource;
+  const { activeProvider: provider, name, url, schemas } = datasource;
 
   return `
 datasource ${name} {
   ${handleProvider(provider)}
   ${handleUrl(url)}
+  ${handleSchemas(schemas)}
 }`;
 }
 

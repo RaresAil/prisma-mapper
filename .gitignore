@@ -108,4 +108,4 @@ bin
 prisma
 prisma-mapper.json
 .DS_Store
-out.prisma
+out*.prisma

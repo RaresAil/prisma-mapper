@@ -4,8 +4,9 @@ import { Elements } from '../types';
 
 const SPECIAL_PARAMS = ['@unique', '@id'];
 
-export async function getModelElements(
-  schema: string
+export async function getElements(
+  schema: string,
+  type: 'model' | 'enum'
 ): Promise<Record<string, Elements>> {
   const parsedCurrentSchema = await formatSchema({ schema });
   let currentModel = '';
@@ -16,7 +17,7 @@ export async function getModelElements(
       return;
     }
 
-    if (line.trim().startsWith('model')) {
+    if (line.trim().startsWith(`${type} `)) {
       currentModel = line.split(' ')[1];
       elementsParent[currentModel.toString()] = {
         elements: [],
@@ -37,6 +38,15 @@ export async function getModelElements(
       let argsPart0 = trimmedLine.replace(`${name}(`, '');
       if (argsPart0.endsWith(')')) {
         argsPart0 = argsPart0.slice(0, -1);
+      }
+
+      if (name === '@@schema') {
+        elementsParent[currentModel.toString()].elements.push({
+          name,
+          rawParams: [argsPart0]
+        });
+
+        return;
       }
 
       const [arrayPart, argsPart1] = argsPart0.split(']');

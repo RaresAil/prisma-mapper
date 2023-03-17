@@ -5,8 +5,8 @@ import colors from 'colors/safe';
 import nodePath from 'path';
 import fs from 'fs';
 
-import { ExtendedField, ExtendedModel, Models } from '../types';
-import { getModelElements } from '../functions/getModelElements';
+import { ExtendedEnum, ExtendedField, ExtendedModel, Models } from '../types';
+import { getElements } from '../functions/getElements';
 import { generateJson } from '../functions/generate';
 import CLIError from '../CLIError';
 import {
@@ -71,7 +71,8 @@ export const action = async (
     colors.green(`+${Date.now() - nowTime}ms`)
   );
   nowTime = Date.now();
-  const modelElements = await getModelElements(datamodel);
+  const modelElements = await getElements(datamodel, 'model');
+  const enumElements = await getElements(datamodel, 'enum');
 
   log(
     colors.cyan(Config.logPrefix),
@@ -214,11 +215,15 @@ export const action = async (
     return model;
   });
 
-  const mappedEnums = enums.map((enumModel) => {
+  const mappedEnums = enums.map((enumModel): ExtendedEnum => {
     const jsonModel = jsonModels[enumModel.dbName || enumModel.name];
+    const elementsParent = enumElements[enumModel.name];
 
     if (!jsonModel) {
-      return enumModel;
+      return {
+        ...enumModel,
+        elementsParent
+      };
     }
 
     if (!jsonModel.hasMap && !!jsonModel.name) {
@@ -237,7 +242,10 @@ export const action = async (
       return value;
     });
 
-    return enumModel;
+    return {
+      ...enumModel,
+      elementsParent
+    };
   });
 
   log(

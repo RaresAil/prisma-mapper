@@ -13,6 +13,7 @@ export interface Models {
 
 export interface Element {
   name: string;
+  rawParams?: string[];
   arrayArg?: string[];
   params?: Record<string, unknown>;
   isField?: string; // for fields
@@ -34,5 +35,9 @@ export interface ExtendedField extends DMMF.Field {
 }
 
 export interface ExtendedModel extends DMMF.Model {
+  elementsParent?: Elements;
+}
+
+export interface ExtendedEnum extends DMMF.DatamodelEnum {
   elementsParent?: Elements;
 }
