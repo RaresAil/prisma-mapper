@@ -29,7 +29,7 @@ model ModelTwo {
   createdAt  DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt  DateTime?    @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt  DateTime?    @map("deleted_at") @db.Timestamptz(6)
-  someInt    Int          @map("some_int")
+  someInt    BigInt?      @default(-2) @map("some_int")
   someUuid   String?      @map("some_uuid") @db.Uuid
   ModelThree ModelThree[]
 
