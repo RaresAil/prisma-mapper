@@ -1,0 +1,9 @@
+enum_ignore_s_contents.someValue
+enum_ignore_contents.*
+enum_ignore_model
+
+model_ignore_s_contents.updated_at
+model_ignore_s_contents.created_at
+model_ignore_s_contents.enum_three
+model_ignore_contents.*
+model_ignore

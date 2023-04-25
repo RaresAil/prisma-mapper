@@ -60,6 +60,40 @@ model ModelFour {
   @@map("model_four")
 }
 
+model model_ignore {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  enum_one   EnumOne    @default(SomeValue)
+  enum_two   EnumTwo?
+  enum_three EnumThree?
+  created_at DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?  @updatedAt @db.Timestamptz(6)
+  deleted_at DateTime?  @db.Timestamptz(6)
+}
+
+model ModelIgnoreContents {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  enum_one   EnumOne    @default(SomeValue)
+  enum_two   EnumTwo?
+  enum_three EnumThree?
+  created_at DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?  @updatedAt @db.Timestamptz(6)
+  deleted_at DateTime?  @db.Timestamptz(6)
+
+  @@map("model_ignore_contents")
+}
+
+model ModelIgnoreSContents {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  enumOne    EnumOne    @default(SomeValue) @map("enum_one")
+  enumTwo    EnumTwo?   @map("enum_two")
+  enum_three EnumThree?
+  created_at DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?  @updatedAt @db.Timestamptz(6)
+  deletedAt  DateTime?  @map("deleted_at") @db.Timestamptz(6)
+
+  @@map("model_ignore_s_contents")
+}
+
 enum EnumOne {
   SomeValue @map("some_value")
   Single    @map("single")
@@ -79,4 +113,23 @@ enum EnumThree {
   Single    @map("single")
 
   @@map("enum_three")
+}
+
+enum EnumIgnoreContents {
+  someValue
+  single
+
+  @@map("enum_ignore_contents")
+}
+
+enum EnumIgnoreSContents {
+  someValue
+  Single    @map("single")
+
+  @@map("enum_ignore_s_contents")
+}
+
+enum enum_ignore_model {
+  someValue
+  single
 }

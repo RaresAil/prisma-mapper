@@ -15,6 +15,7 @@ A CLI that adds @map and @@map based on a json
 - Adds the `@updatedAt` for fields with the name `updated_at` or `updatedAt`
 - The prisma schema is formatted by the `@prisma/internals` after generation
 - The cli does not modify the current schema and generates a new one with the information from the current one
+- `.pmignore` Can be used to avoid adding the `@map`/`@@map` for specific fields when running the `map` command
 
 ### Node Versions
 
@@ -100,3 +101,19 @@ Both 2 commands have an option `--schema "new schema path` to use the schema fro
 
 - `-o --output "output schema path"`
   - after mapping save the schema to another location
+
+### Ignore File
+
+Example for the `.pmignore` file
+
+```pmignore
+enum_ignore_s_contents.someValue
+enum_ignore_contents.*
+enum_ignore_model
+
+model_ignore_s_contents.updated_at
+model_ignore_s_contents.created_at
+model_ignore_s_contents.enum_three
+model_ignore_contents.*
+model_ignore
+```
