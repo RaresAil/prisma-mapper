@@ -26,6 +26,7 @@ A CLI that adds @map and @@map based on a json
 | 17.x     | ❌        |
 | 18.x     | ✅        |
 | 19.x     | ✅        |
+| 20.x     | ✅        |
 
 ### Getting Started
 
