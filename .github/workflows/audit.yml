@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 19.0
+      - name: Use Node.js 20.0
         uses: actions/setup-node@v3
         with:
-          node-version: 19.0
+          node-version: 20.0
           cache: 'yarn'
       - name: Audit
         run: yarn audit --level info
