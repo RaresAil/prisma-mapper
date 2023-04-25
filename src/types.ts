@@ -1,5 +1,10 @@
 import { DMMF } from '@prisma/generator-helper';
 
+export enum IgnoreType {
+  Fields = 'fields',
+  Model = 'model'
+}
+
 export interface Model {
   relationFields?: Record<string, string | null>;
   fields: Record<string, string | null>;

@@ -55,6 +55,36 @@ model model_four {
   deleted_at DateTime?   @db.Timestamptz(6)
 }
 
+model model_ignore {
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  enum_one   enum_one    @default(some_value)
+  enum_two   enum_two?
+  enum_three enum_three?
+  created_at DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?   @db.Timestamptz(6)
+  deleted_at DateTime?   @db.Timestamptz(6)
+}
+
+model model_ignore_contents {
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  enum_one   enum_one    @default(some_value)
+  enum_two   enum_two?
+  enum_three enum_three?
+  created_at DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?   @db.Timestamptz(6)
+  deleted_at DateTime?   @db.Timestamptz(6)
+}
+
+model model_ignore_s_contents {
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  enum_one   enum_one    @default(some_value)
+  enum_two   enum_two?
+  enum_three enum_three?
+  created_at DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?   @db.Timestamptz(6)
+  deleted_at DateTime?   @db.Timestamptz(6)
+}
+
 enum enum_one {
   some_value
   single
@@ -66,6 +96,21 @@ enum enum_two {
 }
 
 enum enum_three {
+  someValue
+  single
+}
+
+enum enum_ignore_contents {
+  someValue
+  single
+}
+
+enum enum_ignore_s_contents {
+  someValue
+  single
+}
+
+enum enum_ignore_model {
   someValue
   single
 }

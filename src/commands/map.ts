@@ -5,7 +5,13 @@ import colors from 'colors/safe';
 import nodePath from 'path';
 import fs from 'fs';
 
-import { ExtendedEnum, ExtendedField, ExtendedModel, Models } from '../types';
+import {
+  ExtendedEnum,
+  ExtendedField,
+  ExtendedModel,
+  IgnoreType,
+  Models
+} from '../types';
 import { getElements } from '../functions/getElements';
 import { generateJson } from '../functions/generate';
 import CLIError from '../CLIError';
@@ -16,6 +22,7 @@ import {
   deserializeEnums
 } from '../functions/deserialize';
 import Config from '../index';
+import { IgnoreFileName } from '../consts';
 
 export interface ActionOptions {
   output?: string;
@@ -42,6 +49,10 @@ export const action = async (
     ? schema
     : nodePath.normalize(nodePath.join(Config.userDir, schema));
 
+  const ignorePath = nodePath.normalize(
+    nodePath.join(Config.userDir, IgnoreFileName)
+  );
+
   const correctOutput = isOutputAbs
     ? output
     : nodePath.normalize(nodePath.join(Config.userDir, output || ''));
@@ -64,6 +75,34 @@ export const action = async (
   log(colors.cyan(Config.logPrefix), 'Mapping schema', colors.cyan(schema));
 
   const datamodel = fs.readFileSync(prismaPath, 'utf-8');
+  let ignoreFileData: Record<string, string[] | IgnoreType> | null = null;
+  try {
+    const rawData = fs.readFileSync(ignorePath, 'utf-8');
+    ignoreFileData = rawData
+      .split('\n')
+      .reduce((acc: Record<string, string[] | IgnoreType>, current) => {
+        const trimmed = current.trim();
+        if (!trimmed) {
+          return acc;
+        }
+
+        const [model, field] = trimmed.split('.');
+        let modelAcc: string[] | IgnoreType = acc[model.toString()] || [];
+
+        if (!field) {
+          modelAcc = IgnoreType.Model;
+        } else if (field === '*') {
+          modelAcc = IgnoreType.Fields;
+        } else if (Array.isArray(modelAcc)) {
+          modelAcc = [...modelAcc, field];
+        }
+
+        return {
+          ...acc,
+          [model]: modelAcc
+        };
+      }, {});
+  } catch {}
 
   log(
     colors.cyan(Config.logPrefix),
@@ -110,6 +149,7 @@ export const action = async (
   );
   nowTime = Date.now();
   const mappedModels = models.map((model: ExtendedModel) => {
+    const ignoreData = ignoreFileData?.[model.name.toString()];
     model.elementsParent = modelElements[model.name];
 
     const jsonModel = jsonModels[model.dbName || model.name];
@@ -117,7 +157,11 @@ export const action = async (
       return model;
     }
 
-    if (!jsonModel.hasMap && !!jsonModel.name) {
+    if (
+      ignoreData !== IgnoreType.Model &&
+      !jsonModel.hasMap &&
+      !!jsonModel.name
+    ) {
       model.dbName = model.name;
       model.name = jsonModel.name;
     }
@@ -156,9 +200,17 @@ export const action = async (
       });
     }
 
+    const ignoreFields: Record<string, 1> = Array.isArray(ignoreData)
+      ? ignoreData.reduce((acc, field) => ({ ...acc, [field]: 1 }), {})
+      : {};
+
     model.fields = (model.fields as ExtendedField[]).map((field) => {
       const { name, kind, type, relationFromFields, relationToFields } = field;
       const typeModel = jsonModels[type.toString()];
+      const ignoreField =
+        ignoreData === IgnoreType.Model ||
+        ignoreData === IgnoreType.Fields ||
+        ignoreFields[field.columnName || field.name];
 
       if (kind === 'object' && typeModel?.name) {
         field.type = typeModel.name;
@@ -206,8 +258,10 @@ export const action = async (
         return field;
       }
 
-      field.name = newName;
-      field.columnName = name;
+      if (!ignoreField) {
+        field.name = newName;
+        field.columnName = name;
+      }
 
       return field;
     });
@@ -216,10 +270,12 @@ export const action = async (
   });
 
   const mappedEnums = enums.map((enumModel): ExtendedEnum => {
+    const ignoreData = ignoreFileData?.[enumModel.dbName || enumModel.name];
+
     const jsonModel = jsonModels[enumModel.dbName || enumModel.name];
     const elementsParent = enumElements[enumModel.name];
 
-    if (!jsonModel) {
+    if (!jsonModel || ignoreData === IgnoreType.Model) {
       return {
         ...enumModel,
         elementsParent
@@ -231,16 +287,24 @@ export const action = async (
       enumModel.name = jsonModel.name;
     }
 
-    enumModel.values = enumModel.values.map((value) => {
-      const newName = jsonModel.fields[value.dbName || value.name];
+    if (ignoreData !== IgnoreType.Fields) {
+      const ignoreFields: Record<string, 1> = Array.isArray(ignoreData)
+        ? ignoreData.reduce((acc, field) => ({ ...acc, [field]: 1 }), {})
+        : {};
+      enumModel.values = enumModel.values.map((value) => {
+        if (ignoreFields[value.dbName || value.name]) {
+          return value;
+        }
 
-      if (newName) {
-        value.dbName = value.name;
-        value.name = newName;
-      }
+        const newName = jsonModel.fields[value.dbName || value.name];
+        if (newName) {
+          value.dbName = value.name;
+          value.name = newName;
+        }
 
-      return value;
-    });
+        return value;
+      });
+    }
 
     return {
       ...enumModel,
