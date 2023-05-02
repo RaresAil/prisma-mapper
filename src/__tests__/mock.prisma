@@ -18,6 +18,7 @@ model model_one {
   created_at DateTime  @default(now()) @db.Timestamptz(6)
   updated_at DateTime? @db.Timestamptz(6)
   deleted_at DateTime? @db.Timestamptz(6)
+  string     String    @default("String 1")
 
   @@index([deleted_at, some_id], map: "index_name")
 }
