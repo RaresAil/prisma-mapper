@@ -18,6 +18,7 @@ model ModelOne {
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  string    String    @default("String 1")
 
   @@index([deletedAt, someId], map: "index_name")
   @@map("model_one")

@@ -59,7 +59,7 @@ const handlers = (
           .join(', ')}))`;
       }
 
-      if (typeof value === 'number' || !Number.isNaN(value)) {
+      if (typeof value === 'number' || !Number.isNaN(+value)) {
         return `@default(${value})`;
       }
 
