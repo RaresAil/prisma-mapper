@@ -8,6 +8,20 @@
 
 A CLI that adds @map and @@map based on a json
 
+### Installation
+
+### NPM
+
+```
+npm install -g @raresail/prisma-mapper
+```
+
+### Yarn
+
+```
+yarn global add @raresail/prisma-mapper
+```
+
 ### Features
 
 - Adds `@map` and `@@map`
