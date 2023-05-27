@@ -43,7 +43,7 @@ model ModelThree {
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt  DateTime? @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt  DateTime? @map("deleted_at") @db.Timestamptz(6)
-  ModelTwo   ModelTwo  @relation(fields: [modelTwoId], references: [id], onDelete: Cascade)
+  ModelTwo   ModelTwo  @relation(fields: [modelTwoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([modelTwoId], map: "index_name_3")
   @@map("model_three")

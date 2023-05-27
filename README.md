@@ -21,8 +21,7 @@ A CLI that adds @map and @@map based on a json
 
 | Version  | Supported |
 | -------- | --------- |
-| ^14.15.0 | ✅        |
-| 15.x     | ❌        |
+| <= 15.x  | ❌        |
 | ^16.10.0 | ✅        |
 | 17.x     | ❌        |
 | 18.x     | ✅        |
