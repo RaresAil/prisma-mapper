@@ -253,6 +253,7 @@ export const action = async (
         const relationalName = jsonModel.relationFields?.[name.toString()];
         if (relationalName) {
           field.name = relationalName;
+          field.columnName = name;
         }
 
         return field;
