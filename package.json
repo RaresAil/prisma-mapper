@@ -1,6 +1,6 @@
 {
   "name": "@raresail/prisma-mapper",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "A CLI that adds @Map, @@Map, @updatedAt based on a json or camel case for the prisma schema",
   "main": "bin/index.js",
   "preferGlobal": true,
@@ -30,7 +30,7 @@
   "homepage": "https://github.com/RaresAil/prisma-mapper",
   "repository": "https://github.com/RaresAil/prisma-mapper.git",
   "author": "RaresAil <ailincairares1@gmail.com>",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "private": false,
   "scripts": {
     "prepublishOnly": "yarn build",
