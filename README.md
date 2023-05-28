@@ -4,7 +4,14 @@
 [![Node.js CI](https://github.com/RaresAil/prisma-mapper/actions/workflows/node.js.yml/badge.svg)](https://github.com/RaresAil/prisma-mapper/actions/workflows/node.js.yml)
 [![Yarn Audit CI](https://github.com/RaresAil/prisma-mapper/actions/workflows/audit.yml/badge.svg)](https://github.com/RaresAil/prisma-mapper/actions/workflows/audit.yml)
 
+Downloads on old package naming
+
 ![NPM Package Downloads](https://badgen.net/npm/dm/prisma-mapper)
+
+Downloads on new package naming
+
+![NPM Package Downloads](https://badgen.net/npm/dm/@raresail/prisma-mapper
+)
 
 A CLI that adds @map and @@map based on a json
 
