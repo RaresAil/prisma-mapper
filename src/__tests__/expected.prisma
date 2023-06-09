@@ -1,7 +1,7 @@
 generator client {
   provider        = "mock"
   previewFeatures = ["metrics"]
-  binaryTargets   = [env("mock"), "mock"]
+  binaryTargets   = ["native"]
   engineType      = "mock"
   output          = env("mock")
 }

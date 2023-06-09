@@ -365,13 +365,17 @@ function customPrintGeneratorConfig({
 
   let binaryTargetsValue = '';
   if (binaryTargets.length) {
-    const targets = binaryTargets.map((target) => {
+    let targets = binaryTargets.map((target) => {
       if (target.fromEnvVar) {
         return `env("${target.fromEnvVar}")`;
       }
 
       return `"${target.value}"`;
     });
+
+    if (binaryTargets[0].native && binaryTargets.length === 1) {
+      targets = ['"native"'];
+    }
 
     binaryTargetsValue = `binaryTargets = [${targets.join(', ')}]`;
   }
