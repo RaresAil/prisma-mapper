@@ -1,6 +1,6 @@
 {
   "name": "@raresail/prisma-mapper",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "A CLI that adds @Map, @@Map, @updatedAt based on a json or camel case for the prisma schema",
   "main": "bin/index.js",
   "preferGlobal": true,
@@ -41,19 +41,21 @@
     "test": "jest"
   },
   "dependencies": {
-    "@prisma/internals": "^4.15.0",
+    "@prisma/internals": "^4.16.1",
     "colors": "^1.4.0",
-    "commander": "^10.0.1",
+    "commander": "^11.0.0",
     "inquirer": "^9.2.7"
   },
-  "resolutions": {},
+  "resolutions": {
+    "semver": "^7.5.2"
+  },
   "devDependencies": {
     "@types/inquirer": "^9.0.3",
     "@types/jest": "^29.5.2",
-    "@types/node": "^20.2.5",
-    "@typescript-eslint/eslint-plugin": "^5.59.9",
-    "@typescript-eslint/parser": "^5.59.9",
-    "eslint": "^8.42.0",
+    "@types/node": "^20.3.1",
+    "@typescript-eslint/eslint-plugin": "^5.60.0",
+    "@typescript-eslint/parser": "^5.60.0",
+    "eslint": "^8.43.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^16.0.0",
