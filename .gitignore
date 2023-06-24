@@ -109,3 +109,4 @@ prisma
 prisma-mapper.json
 .DS_Store
 out*.prisma
+e2e/generated*

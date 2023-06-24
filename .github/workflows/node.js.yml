@@ -53,5 +53,7 @@ jobs:
           path: 'bin'
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
-      - name: demo
-        run: node bin/commands.js
+      - name: Map mocked Schema to camelCase and verify it
+        run: |
+          node bin/commands.js map --camel --schema e2e/mock.prisma -o e2e/generated.prisma
+          cmp -s e2e/expected.prisma e2e/generated.prisma
