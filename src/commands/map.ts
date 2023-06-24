@@ -2,18 +2,12 @@ import { getConfig, getDMMF, formatSchema } from '@prisma/internals';
 import { DMMF } from '@prisma/generator-helper';
 import { Command } from 'commander';
 import colors from 'colors/safe';
+import fs from 'fs/promises';
 import nodePath from 'path';
-import fs from 'fs';
 
-import {
-  ExtendedEnum,
-  ExtendedField,
-  ExtendedModel,
-  IgnoreType,
-  Models
-} from '../types';
 import { getElements } from '../functions/getElements';
 import { generateJson } from '../functions/generate';
+import { IgnoreFileName } from '../consts';
 import CLIError from '../CLIError';
 import {
   deserializeDatasources,
@@ -22,9 +16,16 @@ import {
   deserializeEnums
 } from '../functions/deserialize';
 import Config from '../index';
-import { IgnoreFileName } from '../consts';
+import Utils from '../Utils';
+import {
+  ExtendedEnum,
+  ExtendedField,
+  ExtendedModel,
+  IgnoreType,
+  Models
+} from '../types';
 
-export interface ActionOptions {
+interface ActionOptions {
   output?: string;
   schema: string;
   camel: boolean;
@@ -32,17 +33,49 @@ export interface ActionOptions {
 
 export const action = async (
   { schema, output, camel }: ActionOptions,
-  disableLogs?: boolean
+  disableLogs?: boolean,
+  useLegacyExit?: boolean
 ) => {
   const isSchemaAbs = nodePath.isAbsolute(schema);
   const isOutputAbs = nodePath.isAbsolute(output || '');
 
-  const log = (...args: unknown[]) => {
+  const logInfo =
+    (color = colors.gray) =>
+    (...args: unknown[]) => {
+      if (disableLogs) {
+        return;
+      }
+
+      console.log(color(Utils.terminalSymbols().info), ...args);
+    };
+
+  const logError = (...args: unknown[]) => {
     if (disableLogs) {
       return;
     }
 
-    console.log(...args);
+    console.error(colors.red(Utils.terminalSymbols().error), ...args);
+  };
+
+  const logSuccess = (...args: unknown[]) => {
+    if (disableLogs) {
+      return;
+    }
+
+    Utils.clearPrevLine(6);
+    console.log(colors.green(Utils.terminalSymbols().success), ...args);
+  };
+
+  const logSuccessStep = (part: string) => {
+    if (disableLogs) {
+      return;
+    }
+
+    Utils.clearPrevLine();
+    console.log(
+      colors.gray(Utils.terminalSymbols().success),
+      colors.gray(part)
+    );
   };
 
   const prismaPath = isSchemaAbs
@@ -58,26 +91,26 @@ export const action = async (
     : nodePath.normalize(nodePath.join(Config.userDir, output || ''));
   const prismaOutputPath = output ? correctOutput : prismaPath;
 
-  if (!schema.endsWith('.prisma') || !fs.existsSync(prismaPath)) {
-    log(
-      colors.red(Config.logPrefix),
-      'No prisma schema found at',
-      colors.red(prismaPath),
-      '\n'
-    );
+  const prismaExists = await Utils.fsExists(prismaPath);
+  if (!schema.endsWith('.prisma') || !prismaExists) {
+    logError('No Prisma Schema found at', colors.red(prismaPath), '\n');
 
-    throw new CLIError('No prisma schema found');
+    if (useLegacyExit) {
+      throw new CLIError('No prisma schema found');
+    }
+
+    return process.exit(1);
   }
 
   let nowTime = Date.now();
   const start = nowTime;
 
-  log(colors.cyan(Config.logPrefix), 'Mapping schema', colors.cyan(schema));
+  logInfo(colors.blue)('Mapping Schema', colors.gray(schema));
 
-  const datamodel = fs.readFileSync(prismaPath, 'utf-8');
+  const datamodel = await fs.readFile(prismaPath, 'utf-8');
   let ignoreFileData: Record<string, string[] | IgnoreType> | null = null;
   try {
-    const rawData = fs.readFileSync(ignorePath, 'utf-8');
+    const rawData = await fs.readFile(ignorePath, 'utf-8');
     ignoreFileData = rawData
       .split('\n')
       .reduce((acc: Record<string, string[] | IgnoreType>, current) => {
@@ -104,36 +137,42 @@ export const action = async (
       }, {});
   } catch {}
 
-  log(
-    colors.cyan(Config.logPrefix),
-    'Parsing schema indexes',
-    colors.green(`+${Date.now() - nowTime}ms`)
-  );
+  logInfo()(colors.gray('Parsing Schema Indexes'));
   nowTime = Date.now();
   const modelElements = await getElements(datamodel, 'model');
   const enumElements = await getElements(datamodel, 'enum');
+  logSuccessStep(`Schema Indexes Parsed ${Date.now() - nowTime}ms`);
 
-  log(
-    colors.cyan(Config.logPrefix),
-    'Parsing schema models',
-    colors.green(`+${Date.now() - nowTime}ms`)
-  );
+  logInfo()(colors.gray('Parsing Schema Models'));
   nowTime = Date.now();
   const dmmf = await getDMMF({ datamodel });
 
+  const readJSONMapper = async (path: string): Promise<string> => {
+    const exists = await Utils.fsExists(path);
+    if (!exists) {
+      logError('No JSON Mapper found at', colors.red(path), '\n');
+
+      if (useLegacyExit) {
+        throw new CLIError('No prisma schema found');
+      }
+
+      return process.exit(1);
+    }
+
+    return fs.readFile(path, 'utf8');
+  };
+
   const jsonModels: Models = !camel
     ? JSON.parse(
-        fs
-          .readFileSync(nodePath.join(Config.userDir, 'prisma-mapper.json'))
-          .toString('utf8')
+        await readJSONMapper(
+          nodePath.join(Config.userDir, 'prisma-mapper.json')
+        )
       )
     : await generateJson(dmmf, {}, true);
 
-  log(
-    colors.cyan(Config.logPrefix),
-    'Parsing schema config',
-    colors.green(`+${Date.now() - nowTime}ms`)
-  );
+  logSuccessStep(`Schema Models Parsed ${Date.now() - nowTime}ms`);
+
+  logInfo()(colors.gray('Parsing Schema Config'));
   nowTime = Date.now();
   const { datasources, generators } = await getConfig({
     datamodel,
@@ -142,11 +181,9 @@ export const action = async (
 
   const { models, enums } = dmmf.datamodel;
 
-  log(
-    colors.cyan(Config.logPrefix),
-    'Mapping schema models',
-    colors.green(`+${Date.now() - nowTime}ms`)
-  );
+  logSuccessStep(`Schema Config Parsed ${Date.now() - nowTime}ms`);
+
+  logInfo()(colors.gray('Mapping Schema Models'));
   nowTime = Date.now();
   const mappedModels = models.map((model: ExtendedModel) => {
     const ignoreData = ignoreFileData?.[model.name.toString()];
@@ -313,11 +350,9 @@ export const action = async (
     };
   });
 
-  log(
-    colors.cyan(Config.logPrefix),
-    'Deserializing schema',
-    colors.green(`+${Date.now() - nowTime}ms`)
-  );
+  logSuccessStep(`Schema Models Mapped ${Date.now() - nowTime}ms`);
+
+  logInfo()(colors.gray('Deserializing Schema'));
 
   nowTime = Date.now();
   const outputSchema = await formatSchema({
@@ -333,21 +368,20 @@ export const action = async (
       .join('\n\n\n')
   });
 
-  log(
-    colors.cyan(Config.logPrefix),
-    'Saving new schema',
-    colors.green(`+${Date.now() - nowTime}ms`)
-  );
+  logSuccessStep(`Schema Deserialized ${Date.now() - nowTime}ms`);
+
+  logInfo()(colors.gray('Saving new Schema'));
 
   nowTime = Date.now();
 
-  fs.writeFileSync(prismaOutputPath as string, outputSchema);
+  await fs.writeFile(prismaOutputPath as string, outputSchema);
 
-  log(
-    colors.green(Config.logPrefix),
-    'Schema mapped in',
-    colors.green(`${Date.now() - start}ms`)
-  );
+  logSuccessStep(`Schema Saved ${Date.now() - nowTime}ms`);
+
+  const timeTilCompletion = Date.now() - start;
+  const timeColor = timeTilCompletion > 60 ? colors.red : colors.green;
+
+  logSuccess('Schema mapped in', timeColor(`${timeTilCompletion}ms`));
 };
 
 export default (program: Command) => {

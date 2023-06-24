@@ -7,7 +7,7 @@ import fs from 'fs';
 
 import Config from './index';
 
-export const program = new Command();
+const program = new Command();
 
 program
   .version(Config.version)
@@ -17,18 +17,22 @@ program
   .option('-o --output <path>', 'prisma schema output path');
 
 const rawCommands = fs.readdirSync(path.join(__dirname, 'commands'));
-rawCommands.forEach((command) => {
-  try {
-    if (
-      !command.toString().endsWith('.js') &&
-      !command.toString().endsWith('.ts')
-    ) {
-      return;
-    }
+const commandLoader = Promise.all(
+  rawCommands.map(async (command) => {
+    try {
+      if (
+        !command.toString().endsWith('.js') &&
+        !command.toString().endsWith('.ts')
+      ) {
+        return;
+      }
 
-    require(path.join(__dirname, 'commands', command)).default(program);
-  } catch {}
-});
+      (await import(path.join(__dirname, 'commands', command))).default(
+        program
+      );
+    } catch {}
+  })
+);
 
 if (process.env.NODE_ENV !== 'dev') {
   try {
@@ -53,7 +57,8 @@ if (process.env.NODE_ENV !== 'dev') {
   } catch {}
 }
 
-(() => {
+(async () => {
+  await commandLoader;
   program.parseOptions(process.argv);
   program.parse(process.argv);
 })();

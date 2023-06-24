@@ -50,30 +50,37 @@ model model_three {
 }
 
 model model_four {
-  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  enum_one   enum_one    @default(some_value)
-  enum_two   enum_two?
-  enum_three enum_three?
-  created_at DateTime    @default(now()) @db.Timestamptz(6)
-  updated_at DateTime?   @db.Timestamptz(6)
-  deleted_at DateTime?   @db.Timestamptz(6)
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  enum_one    enum_one    @default(some_value)
+  enum_two    enum_two?
+  enum_three  enum_three?
+  boolean_one Boolean     @default(false)
+  string_one  String      @default("")
+  created_at  DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime?   @db.Timestamptz(6)
+  deleted_at  DateTime?   @db.Timestamptz(6)
+  camelCase   String?
+
   @@schema("transactional")
 }
 
 enum enum_one {
   some_value
   single
+
   @@schema("base")
 }
 
 enum enum_two {
   SOME_VALUE
   SINGLE
+
   @@schema("transactional")
 }
 
 enum enum_three {
   someValue
   single
+
   @@schema("base")
 }

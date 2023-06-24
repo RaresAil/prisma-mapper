@@ -53,13 +53,16 @@ model ModelThree {
 }
 
 model ModelFour {
-  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  enumOne   EnumOne    @default(SomeValue) @map("enum_one")
-  enumTwo   EnumTwo?   @map("enum_two")
-  enumThree EnumThree? @map("enum_three")
-  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime?  @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt DateTime?  @map("deleted_at") @db.Timestamptz(6)
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  enumOne    EnumOne    @default(SomeValue) @map("enum_one")
+  enumTwo    EnumTwo?   @map("enum_two")
+  enumThree  EnumThree? @map("enum_three")
+  booleanOne Boolean    @default(false) @map("boolean_one")
+  stringOne  String     @map("string_one")
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime?  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime?  @map("deleted_at") @db.Timestamptz(6)
+  camelCase  String?
 
   @@map("model_four")
   @@schema("transactional")
