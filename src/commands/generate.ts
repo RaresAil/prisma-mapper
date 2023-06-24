@@ -1,8 +1,8 @@
 import { getDMMF } from '@prisma/internals';
 import { Command } from 'commander';
 import colors from 'colors/safe';
+import fs from 'fs/promises';
 import nodePath from 'path';
-import fs from 'fs';
 
 import { generateJson } from '../functions/generate';
 import { Models } from '../types';
@@ -44,7 +44,8 @@ export default (program: Command) => {
         nodePath.join(Config.userDir || '', schema)
       );
 
-      if (!schema.endsWith('.prisma') || !fs.existsSync(prismaPath)) {
+      const prismaExists = await Utils.fsExists(prismaPath);
+      if (!schema.endsWith('.prisma') || !prismaExists) {
         logError('No Prisma Schema found at', colors.red(prismaPath), '\n');
         return process.exit(1);
       }
@@ -63,7 +64,7 @@ export default (program: Command) => {
       let existingModels: Models = {};
 
       try {
-        existingModels = JSON.parse(fs.readFileSync(jsonPath).toString('utf8'));
+        existingModels = JSON.parse(await fs.readFile(jsonPath, 'utf8'));
       } catch {}
 
       logSuccessStep(
@@ -86,7 +87,7 @@ export default (program: Command) => {
       logInfo()(colors.gray('Saving Mappings'));
       nowTime = Date.now();
 
-      fs.writeFileSync(jsonPath, JSON.stringify(config, null, 2));
+      await fs.writeFile(jsonPath, JSON.stringify(config, null, 2));
 
       logSuccessStep(`Mappings Saved ${Date.now() - nowTime}ms`);
 
