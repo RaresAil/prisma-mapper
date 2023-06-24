@@ -15,7 +15,6 @@ import {
 import { getElements } from '../functions/getElements';
 import { generateJson } from '../functions/generate';
 import { IgnoreFileName } from '../consts';
-import CLIError from '../CLIError';
 import {
   deserializeDatasources,
   deserializeGenerators,
