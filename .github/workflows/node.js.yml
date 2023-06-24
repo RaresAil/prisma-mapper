@@ -60,4 +60,4 @@ jobs:
       - name: Verify Mapped Schemas
         run: |
           cmp -s e2e-generated.prisma src/__tests__/expected.prisma
-          cmp -s e2e-multi-generated src/__tests__/expected-multi-schema.prisma
+          cmp -s e2e-multi-generated.prisma src/__tests__/expected-multi-schema.prisma
