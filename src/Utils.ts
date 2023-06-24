@@ -45,8 +45,8 @@ export default abstract class Utils {
 
   public static clearPrevLine(line = 1) {
     Array.from(Array(line).keys()).forEach(() => {
-      process.stdout.moveCursor(0, -1);
-      process.stdout.clearLine(1);
+      process.stdout?.moveCursor?.(0, -1);
+      process.stdout?.clearLine?.(1);
     });
   }
 

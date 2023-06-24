@@ -29,6 +29,7 @@ describe('Test map command', () => {
   it('command should pass', async () => {
     await action(
       { schema: MOCK_PRISMA, output: OUTPUT_PRISMA, camel: true },
+      true,
       true
     );
 
@@ -40,7 +41,7 @@ describe('Test map command', () => {
 
   it('command should fail with no schema found', async () => {
     try {
-      await action({ schema: '', camel: true });
+      await action({ schema: '', camel: true }, false, true);
       throw new Error('Should not reach here');
     } catch (e) {
       const error = e as CLIError;

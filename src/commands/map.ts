@@ -1,20 +1,14 @@
 import { getConfig, getDMMF, formatSchema } from '@prisma/internals';
 import { DMMF } from '@prisma/generator-helper';
 import { Command } from 'commander';
-import fs from 'fs/promises';
 import colors from 'colors/safe';
+import fs from 'fs/promises';
 import nodePath from 'path';
 
-import {
-  ExtendedEnum,
-  ExtendedField,
-  ExtendedModel,
-  IgnoreType,
-  Models
-} from '../types';
 import { getElements } from '../functions/getElements';
 import { generateJson } from '../functions/generate';
 import { IgnoreFileName } from '../consts';
+import CLIError from '../CLIError';
 import {
   deserializeDatasources,
   deserializeGenerators,
@@ -23,6 +17,13 @@ import {
 } from '../functions/deserialize';
 import Config from '../index';
 import Utils from '../Utils';
+import {
+  ExtendedEnum,
+  ExtendedField,
+  ExtendedModel,
+  IgnoreType,
+  Models
+} from '../types';
 
 export interface ActionOptions {
   output?: string;
@@ -32,7 +33,8 @@ export interface ActionOptions {
 
 export const action = async (
   { schema, output, camel }: ActionOptions,
-  disableLogs?: boolean
+  disableLogs?: boolean,
+  useLegacyExit?: boolean
 ) => {
   const isSchemaAbs = nodePath.isAbsolute(schema);
   const isOutputAbs = nodePath.isAbsolute(output || '');
@@ -89,7 +91,11 @@ export const action = async (
   if (!schema.endsWith('.prisma') || !prismaExists) {
     logError('No prisma schema found at', colors.red(prismaPath), '\n');
 
-    process.exit(1);
+    if (useLegacyExit) {
+      throw new CLIError('No prisma schema found');
+    }
+
+    return process.exit(1);
   }
 
   let nowTime = Date.now();

@@ -1,6 +1,6 @@
 {
   "name": "@raresail/prisma-mapper",
-  "version": "1.5.5",
+  "version": "1.6.0",
   "description": "A CLI that adds @Map, @@Map, @updatedAt based on a json or camel case for the prisma schema",
   "main": "bin/index.js",
   "preferGlobal": true,
