@@ -25,7 +25,7 @@ import {
   Models
 } from '../types';
 
-export interface ActionOptions {
+interface ActionOptions {
   output?: string;
   schema: string;
   camel: boolean;
