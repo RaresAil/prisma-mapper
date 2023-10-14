@@ -119,7 +119,7 @@ function handleAttributes(
           return '';
         }
 
-        return handler(attributes[each.toString()]);
+        return handler(attributes[each.toString() as keyof ExtendedField]);
       })
       .join(' ')}`;
   }
@@ -154,7 +154,7 @@ function handleAttributes(
           return '';
         }
 
-        return handler(attributes[each.toString()]);
+        return handler(attributes[each.toString() as keyof ExtendedField]);
       })
       .join(' ')}`;
   }
