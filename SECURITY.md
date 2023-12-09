@@ -9,4 +9,4 @@
 
 ## Reporting a Vulnerability
 
-vulnerabilities can be reported at **rares@raresdesigns.com** or by creating an issue on this repo
+vulnerabilities can be reported at **[rares.ailincai@raresdesigns.com](mailto:rares.ailincai@raresdesigns.com)** or by creating an issue on this repo
