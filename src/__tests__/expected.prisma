@@ -15,6 +15,7 @@ model ModelOne {
   id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   someId    Int       @unique @map("some_id")
   json      Json?     @db.Json
+  jsonB     Json?     @map("json_b") @db.JsonB
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)

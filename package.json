@@ -1,6 +1,6 @@
 {
   "name": "@raresail/prisma-mapper",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "A CLI that adds @Map, @@Map, @updatedAt based on a json or camel case for the prisma schema",
   "main": "bin/index.js",
   "preferGlobal": true,
@@ -29,14 +29,14 @@
   ],
   "homepage": "https://github.com/RaresAil/prisma-mapper",
   "repository": "https://github.com/RaresAil/prisma-mapper.git",
-  "author": "RaresAil <ailincairares1@gmail.com>",
+  "author": "RaresAil <rares.ailincai@raresdesigns.com>",
   "license": "Apache-2.0",
   "private": false,
   "scripts": {
     "prepublishOnly": "yarn build",
     "dev:bin": "yarn build && NODE_ENV=dev node bin/commands.js",
     "dev": "NODE_ENV=dev ts-node src/commands.ts",
-    "build": "yarn lint && rm -rf ./bin/ && tsc -p .",
+    "build": "yarn lint && rimraf -rf ./bin/ && tsc -p .",
     "lint": "eslint src/**/*.ts",
     "test": "jest"
   },
@@ -59,6 +59,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-security": "^1.7.1",
     "jest": "^29.7.0",
+    "rimraf": "^5.0.5",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
     "typescript": "5.3.3"
