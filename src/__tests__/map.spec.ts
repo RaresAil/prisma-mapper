@@ -23,7 +23,10 @@ describe('Test map command', () => {
 
     mapCommand(programMock);
 
-    expectedPrisma = await fs.readFile(EXPECTED_PRISMA, 'utf-8');
+    expectedPrisma = (await fs.readFile(EXPECTED_PRISMA, 'utf-8')).replace(
+      /\r\n/g,
+      '\n'
+    );
   });
 
   it('command should pass', async () => {
@@ -35,7 +38,10 @@ describe('Test map command', () => {
 
     expect(expectedPrisma).not.toEqual('');
 
-    const outputPrisma = await fs.readFile(OUTPUT_PRISMA, 'utf-8');
+    const outputPrisma = (await fs.readFile(OUTPUT_PRISMA, 'utf-8')).replace(
+      /\r\n/g,
+      '\n'
+    );
     expect(outputPrisma).toEqual(expectedPrisma);
   });
 
