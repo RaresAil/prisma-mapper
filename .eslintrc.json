@@ -6,7 +6,7 @@
   "extends": [
     "standard",
     "plugin:@typescript-eslint/recommended",
-    "plugin:security/recommended"
+    "plugin:security/recommended-legacy"
   ],
   "overrides": [],
   "parser": "@typescript-eslint/parser",

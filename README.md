@@ -50,6 +50,8 @@ yarn global add @raresail/prisma-mapper
 | 18.x     | ✅        |
 | 19.x     | ✅        |
 | 20.x     | ✅        |
+| 21.x     | ✅        |
+| 22.x     | ✅        |
 
 ### Getting Started
 
