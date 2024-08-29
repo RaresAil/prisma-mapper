@@ -42,16 +42,12 @@ yarn global add @raresail/prisma-mapper
 
 ### Node Versions
 
-| Version  | Supported |
-| -------- | --------- |
-| <= 15.x  | ❌        |
-| ^16.10.0 | ✅        |
-| 17.x     | ❌        |
-| 18.x     | ✅        |
-| 19.x     | ✅        |
-| 20.x     | ✅        |
-| 21.x     | ✅        |
-| 22.x     | ✅        |
+| Version | Supported |
+| ------- | --------- |
+| <= 19.x | ❌        |
+| 20.x    | ✅        |
+| 21.x    | ❌        |
+| >= 22.x | ✅        |
 
 ### Getting Started
 
