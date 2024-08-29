@@ -9,11 +9,11 @@ jobs:
     name: Build & Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js 20.0
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 20.0
+          node-version: 22.x
           cache: 'yarn'
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
@@ -32,11 +32,11 @@ jobs:
     environment:
       name: NPM
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js 20.0
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 20.0
+          node-version: 22.x
           cache: 'yarn'
           registry-url: https://registry.npmjs.org/
       - name: Install Dependencies
@@ -56,11 +56,11 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js 20.0
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
         with:
-          node-version: 20.0
+          node-version: 22.x
           cache: 'yarn'
           registry-url: https://npm.pkg.github.com
           scope: '@raresail'

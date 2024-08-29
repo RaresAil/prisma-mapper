@@ -13,12 +13,12 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 19.x, 20.x]
+        node-version: [20.x, 22.x]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
@@ -29,25 +29,25 @@ jobs:
       - name: Build
         run: yarn build
       - name: Archive production binary
-        uses: actions/upload-artifact@v3
-        if: matrix.node-version == '20.x'
+        uses: actions/upload-artifact@v4
+        if: matrix.node-version == '22.x'
         with:
           name: binary
           path: bin
   e2e:
     needs: build
-    name: E2E Testing - Node.js 20.x
+    name: E2E Testing - Node.js 22.x
     runs-on: ubuntu-latest
     env:
       NODE_ENV: production
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 22.x
           cache: 'yarn'
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: binary
           path: 'bin'
