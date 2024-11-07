@@ -1,5 +1,7 @@
 import { DMMF } from '@prisma/generator-helper';
 
+export type DeepWriteable<T> = { -readonly [P in keyof T]: DeepWriteable<T[P]> };
+
 export enum IgnoreType {
   Fields = 'fields',
   Model = 'model'
@@ -35,14 +37,14 @@ export interface Elements {
   fields: Record<string, FieldMeta>;
 }
 
-export interface ExtendedField extends DMMF.Field {
+export interface ExtendedField extends DeepWriteable<DMMF.Field> {
   columnName?: string;
 }
 
-export interface ExtendedModel extends DMMF.Model {
+export interface ExtendedModel extends DeepWriteable<DMMF.Model> {
   elementsParent?: Elements;
 }
 
-export interface ExtendedEnum extends DMMF.DatamodelEnum {
+export interface ExtendedEnum extends DeepWriteable<DMMF.DatamodelEnum> {
   elementsParent?: Elements;
 }

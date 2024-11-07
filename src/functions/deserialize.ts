@@ -404,7 +404,9 @@ function customPrintGeneratorConfig({
 // ? Exports
 
 export async function deserializeModels(models: DMMF.Model[]) {
-  return models.map((model) => deserializeModel(model)).join('\n');
+  return models
+    .map((model) => deserializeModel(model as ExtendedModel))
+    .join('\n');
 }
 
 export function deserializeDatasources(datasources: DataSource[]) {
@@ -420,5 +422,5 @@ export async function deserializeGenerators(generators: GeneratorConfig[]) {
 }
 
 export async function deserializeEnums(enums: DMMF.DatamodelEnum[]) {
-  return enums.map((each) => deserializeEnum(each)).join('\n');
+  return enums.map((each) => deserializeEnum(each as ExtendedEnum)).join('\n');
 }

@@ -1,3 +1,4 @@
+import { MultipleSchemaTuple } from '@prisma/internals/dist/utils/schemaFileInput';
 import { getConfig, getDMMF, formatSchema } from '@prisma/internals';
 import { DMMF } from '@prisma/generator-helper';
 import { Command } from 'commander';
@@ -185,178 +186,187 @@ export const action = async (
 
   logInfo()(colors.gray('Mapping Schema Models'));
   nowTime = Date.now();
-  const mappedModels = models.map((model: ExtendedModel) => {
-    const ignoreData = ignoreFileData?.[model.name.toString()];
-    model.elementsParent = modelElements[model.name];
+  const mappedModels = (models as ExtendedModel[]).map(
+    (model: ExtendedModel) => {
+      const ignoreData = ignoreFileData?.[model.name.toString()];
+      model.elementsParent = modelElements[model.name];
 
-    const jsonModel = jsonModels[model.dbName || model.name];
-    if (!jsonModel) {
-      return model;
-    }
-
-    if (
-      ignoreData !== IgnoreType.Model &&
-      !jsonModel.hasMap &&
-      !!jsonModel.name
-    ) {
-      model.dbName = model.name;
-      model.name = jsonModel.name;
-    }
-
-    if (model.elementsParent) {
-      model.elementsParent.elements = model.elementsParent.elements.map(
-        (element) => {
-          if (element.arrayArg) {
-            element.arrayArg = element.arrayArg.map((arg) => {
-              const fieldData = Object.entries(jsonModel.fields).find(
-                ([key]) => arg === key || arg.includes(`${key}(`)
-              );
-
-              if (!fieldData?.[1]) {
-                return arg;
-              }
-
-              return arg.replace(fieldData[0], fieldData[1]);
-            });
-          }
-
-          return element;
-        }
-      );
-    }
-
-    model.uniqueFields = model.uniqueFields.map((fields) =>
-      fields.map((field) => {
-        return jsonModel.fields[field.toString()] || field;
-      })
-    );
-
-    if (model.primaryKey?.fields) {
-      model.primaryKey.fields = model.primaryKey.fields.map((field) => {
-        return jsonModel.fields[field.toString()] || field;
-      });
-    }
-
-    const ignoreFields: Record<string, 1> = Array.isArray(ignoreData)
-      ? ignoreData.reduce((acc, field) => ({ ...acc, [field]: 1 }), {})
-      : {};
-
-    model.fields = (model.fields as ExtendedField[]).map((field) => {
-      const { name, kind, type, relationFromFields, relationToFields } = field;
-      const typeModel = jsonModels[type.toString()];
-      const ignoreField =
-        ignoreData === IgnoreType.Model ||
-        ignoreData === IgnoreType.Fields ||
-        ignoreFields[field.columnName || field.name];
-
-      if (kind === 'object' && typeModel?.name) {
-        field.type = typeModel.name;
-      }
-
-      if (kind === 'enum') {
-        if (!typeModel?.hasMap && typeModel?.name) {
-          field.type = typeModel.name;
-        }
-
-        if (field.default) {
-          field.default =
-            (typeModel.fields[
-              field.default.toString()
-            ] as unknown as DMMF.FieldDefault) || field.default;
-        }
+      const jsonModel = jsonModels[model.dbName || model.name];
+      if (!jsonModel) {
+        return model;
       }
 
       if (
-        kind === 'object' &&
-        relationFromFields &&
-        relationFromFields.length > 0 &&
-        relationToFields
+        ignoreData !== IgnoreType.Model &&
+        !jsonModel.hasMap &&
+        !!jsonModel.name
       ) {
-        field.relationFromFields = relationFromFields.map((field) => {
+        model.dbName = model.name;
+        model.name = jsonModel.name;
+      }
+
+      if (model.elementsParent) {
+        model.elementsParent.elements = model.elementsParent.elements.map(
+          (element) => {
+            if (element.arrayArg) {
+              element.arrayArg = element.arrayArg.map((arg) => {
+                const fieldData = Object.entries(jsonModel.fields).find(
+                  ([key]) => arg === key || arg.includes(`${key}(`)
+                );
+
+                if (!fieldData?.[1]) {
+                  return arg;
+                }
+
+                return arg.replace(fieldData[0], fieldData[1]);
+              });
+            }
+
+            return element;
+          }
+        );
+      }
+
+      model.uniqueFields = model.uniqueFields.map((fields) =>
+        fields.map((field) => {
+          return jsonModel.fields[field.toString()] || field;
+        })
+      );
+
+      if (model.primaryKey?.fields) {
+        model.primaryKey.fields = model.primaryKey.fields.map((field) => {
           return jsonModel.fields[field.toString()] || field;
         });
+      }
 
-        field.relationToFields = relationToFields.map((field) => {
-          return typeModel.fields[field.toString()] || field;
+      const ignoreFields: Record<string, 1> = Array.isArray(ignoreData)
+        ? ignoreData.reduce((acc, field) => ({ ...acc, [field]: 1 }), {})
+        : {};
+
+      model.fields = (model.fields as ExtendedField[]).map(
+        (field: ExtendedField) => {
+          const { name, kind, type, relationFromFields, relationToFields } =
+            field;
+          const typeModel = jsonModels[type.toString()];
+          const ignoreField =
+            ignoreData === IgnoreType.Model ||
+            ignoreData === IgnoreType.Fields ||
+            ignoreFields[field.columnName || field.name];
+
+          if (kind === 'object' && typeModel?.name) {
+            field.type = typeModel.name;
+          }
+
+          if (kind === 'enum') {
+            if (!typeModel?.hasMap && typeModel?.name) {
+              field.type = typeModel.name;
+            }
+
+            if (field.default) {
+              (field.default as unknown) =
+                (typeModel.fields[
+                  field.default.toString()
+                ] as unknown as DMMF.FieldDefault) || field.default;
+            }
+          }
+
+          if (
+            kind === 'object' &&
+            relationFromFields &&
+            relationFromFields.length > 0 &&
+            relationToFields
+          ) {
+            field.relationFromFields = relationFromFields.map((field) => {
+              return jsonModel.fields[field.toString()] || field;
+            });
+
+            field.relationToFields = relationToFields.map((field) => {
+              return typeModel.fields[field.toString()] || field;
+            });
+          }
+
+          if (field.name === 'updated_at' || field.name === 'updatedAt') {
+            field.isUpdatedAt = true;
+          }
+
+          const newName = jsonModel.fields[name.toString()];
+          if (!newName) {
+            const relationalName = jsonModel.relationFields?.[name.toString()];
+            if (relationalName) {
+              field.name = relationalName;
+              field.columnName = name;
+            }
+
+            return field;
+          }
+
+          if (!ignoreField) {
+            field.name = newName;
+            field.columnName = name;
+          }
+
+          return field;
+        }
+      );
+
+      return model;
+    }
+  );
+
+  const mappedEnums = (enums as ExtendedEnum[]).map(
+    (enumModel): ExtendedEnum => {
+      const ignoreData = ignoreFileData?.[enumModel.dbName || enumModel.name];
+
+      const jsonModel = jsonModels[enumModel.dbName || enumModel.name];
+      const elementsParent = enumElements[enumModel.name];
+
+      if (!jsonModel || ignoreData === IgnoreType.Model) {
+        return {
+          ...enumModel,
+          elementsParent
+        };
+      }
+
+      if (!jsonModel.hasMap && !!jsonModel.name) {
+        enumModel.dbName = enumModel.name;
+        enumModel.name = jsonModel.name;
+      }
+
+      if (ignoreData !== IgnoreType.Fields) {
+        const ignoreFields: Record<string, 1> = Array.isArray(ignoreData)
+          ? ignoreData.reduce((acc, field) => ({ ...acc, [field]: 1 }), {})
+          : {};
+        enumModel.values = enumModel.values.map((value) => {
+          if (ignoreFields[value.dbName || value.name]) {
+            return value;
+          }
+
+          const newName = jsonModel.fields[value.dbName || value.name];
+          if (newName) {
+            value.dbName = value.name;
+            value.name = newName;
+          }
+
+          return value;
         });
       }
 
-      if (field.name === 'updated_at' || field.name === 'updatedAt') {
-        field.isUpdatedAt = true;
-      }
-
-      const newName = jsonModel.fields[name.toString()];
-      if (!newName) {
-        const relationalName = jsonModel.relationFields?.[name.toString()];
-        if (relationalName) {
-          field.name = relationalName;
-          field.columnName = name;
-        }
-
-        return field;
-      }
-
-      if (!ignoreField) {
-        field.name = newName;
-        field.columnName = name;
-      }
-
-      return field;
-    });
-
-    return model;
-  });
-
-  const mappedEnums = enums.map((enumModel): ExtendedEnum => {
-    const ignoreData = ignoreFileData?.[enumModel.dbName || enumModel.name];
-
-    const jsonModel = jsonModels[enumModel.dbName || enumModel.name];
-    const elementsParent = enumElements[enumModel.name];
-
-    if (!jsonModel || ignoreData === IgnoreType.Model) {
       return {
         ...enumModel,
         elementsParent
       };
     }
-
-    if (!jsonModel.hasMap && !!jsonModel.name) {
-      enumModel.dbName = enumModel.name;
-      enumModel.name = jsonModel.name;
-    }
-
-    if (ignoreData !== IgnoreType.Fields) {
-      const ignoreFields: Record<string, 1> = Array.isArray(ignoreData)
-        ? ignoreData.reduce((acc, field) => ({ ...acc, [field]: 1 }), {})
-        : {};
-      enumModel.values = enumModel.values.map((value) => {
-        if (ignoreFields[value.dbName || value.name]) {
-          return value;
-        }
-
-        const newName = jsonModel.fields[value.dbName || value.name];
-        if (newName) {
-          value.dbName = value.name;
-          value.name = newName;
-        }
-
-        return value;
-      });
-    }
-
-    return {
-      ...enumModel,
-      elementsParent
-    };
-  });
+  );
 
   logSuccessStep(`Schema Models Mapped ${Date.now() - nowTime}ms`);
 
   logInfo()(colors.gray('Deserializing Schema'));
 
   nowTime = Date.now();
-  const outputSchema = await formatSchema({
-    schema: (
+
+  const schemaTuple: MultipleSchemaTuple = [
+    '',
+    (
       await Promise.all([
         deserializeGenerators(generators),
         deserializeDatasources(datasources),
@@ -366,6 +376,10 @@ export const action = async (
     )
       .filter((e) => e)
       .join('\n\n\n')
+  ];
+
+  const outputSchema = await formatSchema({
+    schemas: [schemaTuple]
   });
 
   logSuccessStep(`Schema Deserialized ${Date.now() - nowTime}ms`);
@@ -374,7 +388,7 @@ export const action = async (
 
   nowTime = Date.now();
 
-  await fs.writeFile(prismaOutputPath as string, outputSchema);
+  await fs.writeFile(prismaOutputPath as string, outputSchema[0][1]);
 
   logSuccessStep(`Schema Saved ${Date.now() - nowTime}ms`);
 
