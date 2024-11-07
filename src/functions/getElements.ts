@@ -8,11 +8,11 @@ export async function getElements(
   schema: string,
   type: 'model' | 'enum'
 ): Promise<Record<string, Elements>> {
-  const parsedCurrentSchema = await formatSchema({ schema });
+  const parsedCurrentSchema = await formatSchema({ schemas: [['', schema]] });
   let currentModel = '';
   const elementsParent: Record<string, Elements> = {};
 
-  parsedCurrentSchema.split('\n').forEach((line) => {
+  parsedCurrentSchema[0][1].split('\n').forEach((line) => {
     if (currentModel && line.trim().startsWith('@@map')) {
       return;
     }
